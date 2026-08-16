@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Order status — Laghman Express</title>
 <link rel="icon" href="assets/logo-symbol.png">
@@ -37,19 +37,19 @@ a.btn{display:inline-block;margin-top:1.2rem;padding:.8rem 1.5rem;border-radius:
 var API="https://orders-service-production-ab21.up.railway.app";
 var STR={
  en:{wait:"Confirming your payment…",waitSub:"This usually takes a few seconds.",
-  paid:"Order paid — thank you!",paidSub:"The kitchen is being notified. Pick it up at the counter; bring this screen if asked.",
-  failed:"Payment didn't go through",failedSub:"No charge was completed. You can try again or call the kitchen.",
-  unknown:"We're double-checking your payment",unknownSub:"If you were charged, don't pay again — the kitchen will reconcile it. Keep this page reference.",
+  paid:"Order paid — thank you!",paidSub:"The kitchen is being notified. Pick it up at the counter — show this screen if asked.",
+  failed:"Payment didn't go through",failedSub:"Your card wasn't charged. You can try again or call the kitchen.",
+  unknown:"We're double-checking your payment",unknownSub:"If you were charged, don't pay again — the kitchen will reconcile it. Keep this page open; your reference is below.",
   noToken:"This link is missing its order reference.",back:"Back to menu",ref:"Reference"},
  ru:{wait:"Подтверждаем оплату…",waitSub:"Обычно это занимает несколько секунд.",
-  paid:"Заказ оплачен — спасибо!",paidSub:"Кухня получает уведомление. Заберите заказ у стойки; покажите этот экран, если попросят.",
-  failed:"Оплата не прошла",failedSub:"Списания не было. Попробуйте ещё раз или позвоните на кухню.",
-  unknown:"Проверяем вашу оплату",unknownSub:"Если деньги списались — не платите повторно, кухня сверит платёж. Сохраните эту страницу.",
+  paid:"Заказ оплачен — спасибо!",paidSub:"Кухня уже получила уведомление. Заберите заказ у стойки; покажите этот экран, если попросят.",
+  failed:"Оплата не прошла",failedSub:"Деньги с карты не списаны. Попробуйте ещё раз или позвоните на кухню.",
+  unknown:"Проверяем вашу оплату",unknownSub:"Если деньги списались — не платите повторно, кухня сверит платёж. Не закрывайте страницу: номер заказа ниже.",
   noToken:"В ссылке нет номера заказа.",back:"К меню",ref:"Номер"},
  zh:{wait:"正在确认支付…",waitSub:"通常只需几秒钟。",
   paid:"支付成功——谢谢！",paidSub:"门店已收到通知。请到柜台取餐；如有需要请出示本页面。",
   failed:"支付未完成",failedSub:"没有产生扣款。您可以重试，或致电门店。",
-  unknown:"正在核对您的支付",unknownSub:"如果已扣款，请勿重复支付——门店会核对账目。请保留本页面。",
+  unknown:"正在核对您的支付",unknownSub:"如果已扣款，请勿重复支付——门店会核对账目。请保留本页面，订单编号见下方。",
   noToken:"链接中缺少订单编号。",back:"返回菜单",ref:"编号"}
 };
 var lang=(function(){try{var s=localStorage.getItem("lx_lang");if(s==="ru"||s==="zh"||s==="en")return s;}catch(e){}
@@ -57,33 +57,53 @@ var lang=(function(){try{var s=localStorage.getItem("lx_lang");if(s==="ru"||s===
 document.documentElement.lang=lang==="zh"?"zh-CN":lang;
 var T=STR[lang];
 var q=new URLSearchParams(location.search);
-var token=q.get("token"),failed=q.get("result")==="failed";
+var token=q.get("token"),failedHint=q.get("result")==="failed";
 var card=document.getElementById("card");
-function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
 var reference=null;
+function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+function refLine(){
+ var v=reference||(token?token.slice(0,20)+"…":"");
+ if(!v)return "";
+ return '<p class="ref">'+esc(T.ref)+(lang==="zh"?"：":": ")+esc(v)+"</p>";
+}
 function show(icon,h,sub,withRef){
  card.innerHTML='<div class="big">'+icon+"</div><h1>"+esc(h)+"</h1><p>"+esc(sub)+"</p>"
- +'<a class="btn" href="order">'+esc(T.back)+"</a>"
- +(withRef&&(reference||token)?'<p class="ref">'+esc(T.ref)+": "+esc(reference||token.slice(0,20)+"…")+"</p>":"");
+ +'<a class="btn" href="order">'+esc(T.back)+"</a>"+(withRef?refLine():"");
 }
 function waiting(){card.innerHTML='<div class="spin"></div><h1>'+esc(T.wait)+"</h1><p>"+esc(T.waitSub)+"</p>"}
+/* carts are cleared ONLY here, on confirmed payment — never before redirect */
+function clearCarts(){
+ try{for(var i=localStorage.length-1;i>=0;i--){var k=localStorage.key(i);
+  if(k&&k.indexOf("lx_cart_")===0)localStorage.removeItem(k)}}catch(e){}
+}
+function fetchStatus(){
+ return fetch(API+"/api/order-status/"+encodeURIComponent(token))
+  .then(function(r){return r.ok?r.json():null}).catch(function(){return null});
+}
 if(!token){show("❔",T.noToken,"",false)}
-else if(failed){show("✕",T.failed,T.failedSub,true)}
+else if(failedHint){
+ /* the URL param is a hint, not truth — a raced webhook may have succeeded */
+ show("✕",T.failed,T.failedSub,true);
+ fetchStatus().then(function(j){
+  if(j&&j.reference)reference=j.reference;
+  var s=j&&j.status;
+  if(s==="succeeded"||s==="paid"){clearCarts();show("✓",T.paid,T.paidSub,true)}
+  else if(reference)show("✕",T.failed,T.failedSub,true);
+ });
+}
 else{
  waiting();
- var tries=0;
+ var tries=0,MAX=70; /* ~5.5 min with backoff — webhooks can lag */
  (function poll(){
   tries++;
-  fetch(API+"/api/order-status/"+encodeURIComponent(token))
-  .then(function(r){return r.ok?r.json():null})
-  .then(function(j){
+  fetchStatus().then(function(j){
    if(j&&j.reference)reference=j.reference;
-   var s=j&&(j.status||j.paymentStatus);
-   if(s==="succeeded"||s==="paid"){show("✓",T.paid,T.paidSub,true);return}
+   var s=j&&j.status;
+   if(s==="succeeded"||s==="paid"){clearCarts();show("✓",T.paid,T.paidSub,true);return}
    if(s==="failed"){show("✕",T.failed,T.failedSub,true);return}
-   if(tries<40){setTimeout(poll,3000)}else{show("⏳",T.unknown,T.unknownSub,true)}
-  })
-  .catch(function(){if(tries<40)setTimeout(poll,4000);else show("⏳",T.unknown,T.unknownSub,true)});
+   if(tries<MAX){setTimeout(poll,tries<10?3000:(tries<30?5000:8000))}
+   else{show("⏳",T.unknown,T.unknownSub,true)}
+  });
  })();
 }
 })();
