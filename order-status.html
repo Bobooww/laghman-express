@@ -5,57 +5,102 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Order status — Laghman Express</title>
-<link rel="icon" href="assets/logo-symbol.png">
+<meta name="description" content="Live status of your Laghman Express pickup order.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Laghman Express">
+<meta property="og:title" content="Order status — Laghman Express">
+<meta property="og:description" content="Live status of a Laghman Express pickup order.">
+<meta property="og:image" content="https://bobooww.github.io/laghman-express/assets/og-card.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0b120e">
+<link rel="icon" href="assets/favicon-64.png" type="image/png" sizes="64x64">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Instrument+Sans:wght@400;600&family=Playfair+Display:wght@600&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Instrument+Sans:wght@400;600&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#0b120e;--ink2:#111b14;--cream:#f6f1e4;--cream60:rgba(246,241,228,.62);
- --gold:#e0b25c;--golds:#f0d49a;--ember:#e2612b;
- --display:"Fraunces","Playfair Display","Noto Serif SC",Georgia,serif}
-*{box-sizing:border-box}
+ --gold:#e0b25c;--golds:#f0d49a;--ember:#e2612b;--ease:cubic-bezier(.19,1,.22,1);
+ --display:"Fraunces","Noto Serif SC",Georgia,serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--ink);color:var(--cream);font-family:"Instrument Sans",system-ui,sans-serif;
- min-height:100svh;display:grid;place-items:center;padding:1.5rem}
+ min-height:100vh;min-height:100svh;display:grid;place-items:center;
+ padding:1.5rem;padding-left:max(1.5rem,env(safe-area-inset-left));
+ padding-right:max(1.5rem,env(safe-area-inset-right));
+ padding-bottom:max(1.5rem,env(safe-area-inset-bottom))}
+button,a{touch-action:manipulation}
+a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .card{max-width:480px;width:100%;background:var(--ink2);border:1px solid rgba(224,178,92,.25);
  border-radius:14px;padding:2rem 1.6rem;text-align:center}
+@keyframes cardpop{0%{opacity:0;transform:scale(.96) translateY(8px)}100%{opacity:1;transform:none}}
+.card.pop{animation:cardpop .5s var(--ease)}
 h1{font-family:var(--display);font-weight:600;font-size:1.7rem;margin:.9rem 0 .5rem;letter-spacing:-.01em}
 :lang(zh-CN) h1{letter-spacing:0}
 p{color:var(--cream60);margin:.3rem 0;line-height:1.55}
-.big{font-size:2.6rem}
+.big{font-size:2.6rem;line-height:1}
+.big.fail{color:var(--ember)}
 .spin{display:inline-block;width:28px;height:28px;border:3px solid rgba(246,241,228,.25);
  border-top-color:var(--gold);border-radius:50%;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+.okmark{width:72px;height:72px;display:block;margin:0 auto}
+.okmark circle{stroke:var(--gold);stroke-width:2.4;fill:none;stroke-dasharray:214;stroke-dashoffset:214;
+ animation:draw .7s var(--ease) forwards}
+.okmark path{stroke:var(--gold);stroke-width:3.4;fill:none;stroke-linecap:round;stroke-linejoin:round;
+ stroke-dasharray:60;stroke-dashoffset:60;animation:draw .45s .45s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
 a.btn{display:inline-block;margin-top:1.2rem;padding:.8rem 1.5rem;border-radius:100px;
- background:var(--gold);color:#22160a;font-weight:600;text-decoration:none}
-.ref{margin-top:1rem;font-size:.78rem;color:var(--cream60);word-break:break-all}
+ background:var(--gold);color:#22160a;font-weight:600;text-decoration:none;
+ transition:transform .25s var(--ease)}
+a.btn:active{transform:scale(.97)}
+a.btn-line{display:inline-block;margin:1rem .3rem 0;padding:.75rem 1.3rem;border-radius:100px;
+ border:1px solid rgba(246,241,228,.3);color:var(--cream);font-weight:600;text-decoration:none}
+.ref{margin-top:1rem;font-size:.78rem;color:var(--cream60);word-break:break-all;
+ font-variant-numeric:tabular-nums}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;
+  animation-iteration-count:1!important;transition-duration:.01ms!important}
+ .okmark circle,.okmark path{stroke-dashoffset:0}
+}
 </style>
 </head>
 <body>
-<div class="card" id="card"><div class="spin"></div></div>
+<div class="card" id="card" aria-live="polite"><div class="spin"></div></div>
 <script>
 (function(){
 "use strict";
 var API="https://orders-service-production-ab21.up.railway.app";
+/* enough to render a call-the-kitchen path on failure — kept in sync with /order */
+var KITCHENS={
+ "20th-ave":{name:"20th Ave",phone:"(718) 232-0525",tel:"+17182320525"},
+ "coney-island":{name:"Coney Island Ave",phone:"(718) 233-8333",tel:"+17182338333"}
+};
 var STR={
- en:{wait:"Confirming your payment…",waitSub:"This usually takes a few seconds.",
+ en:{title:"Order status — Laghman Express",
+  wait:"Confirming your payment…",waitSub:"This usually takes a few seconds.",
   paid:"Order paid — thank you!",paidSub:"The kitchen is being notified. Pick it up at the counter — show this screen if asked.",
   failed:"Payment didn't go through",failedSub:"Your card wasn't charged. You can try again or call the kitchen.",
-  unknown:"We're double-checking your payment",unknownSub:"If you were charged, don't pay again — the kitchen will reconcile it. Keep this page open; your reference is below.",
-  noToken:"This link is missing its order reference.",back:"Back to menu",ref:"Reference"},
- ru:{wait:"Подтверждаем оплату…",waitSub:"Обычно это занимает несколько секунд.",
+  unknown:"We're double-checking your payment",unknownSub:"If you were charged, don't pay again — the kitchen will reconcile it. Keep this page open: we keep checking, and your reference is below.",
+  noToken:"This link is missing its order reference.",back:"Back to menu",ref:"Reference",call:"Call"},
+ ru:{title:"Статус заказа — Laghman Express",
+  wait:"Подтверждаем оплату…",waitSub:"Обычно это занимает несколько секунд.",
   paid:"Заказ оплачен — спасибо!",paidSub:"Кухня уже получила уведомление. Заберите заказ у стойки; покажите этот экран, если попросят.",
   failed:"Оплата не прошла",failedSub:"Деньги с карты не списаны. Попробуйте ещё раз или позвоните на кухню.",
-  unknown:"Проверяем вашу оплату",unknownSub:"Если деньги списались — не платите повторно, кухня сверит платёж. Не закрывайте страницу: номер заказа ниже.",
-  noToken:"В ссылке нет номера заказа.",back:"К меню",ref:"Номер"},
- zh:{wait:"正在确认支付…",waitSub:"通常只需几秒钟。",
+  unknown:"Проверяем вашу оплату",unknownSub:"Если деньги списались — не платите повторно, кухня сверит платёж. Не закрывайте страницу: мы продолжаем проверять, номер заказа ниже.",
+  noToken:"В ссылке нет номера заказа.",back:"К меню",ref:"Номер",call:"Позвонить"},
+ zh:{title:"订单状态 — Laghman Express",
+  wait:"正在确认支付…",waitSub:"通常只需几秒钟。",
   paid:"支付成功——谢谢！",paidSub:"门店已收到通知。请到柜台取餐；如有需要请出示本页面。",
   failed:"支付未完成",failedSub:"没有产生扣款。您可以重试，或致电门店。",
-  unknown:"正在核对您的支付",unknownSub:"如果已扣款，请勿重复支付——门店会核对账目。请保留本页面，订单编号见下方。",
-  noToken:"链接中缺少订单编号。",back:"返回菜单",ref:"编号"}
+  unknown:"正在核对您的支付",unknownSub:"如果已扣款，请勿重复支付——门店会核对账目。请保留本页面：我们会持续核对，订单编号见下方。",
+  noToken:"链接中缺少订单编号。",back:"返回菜单",ref:"编号",call:"拨打电话"}
 };
 var lang=(function(){try{var s=localStorage.getItem("lx_lang");if(s==="ru"||s==="zh"||s==="en")return s;}catch(e){}
  var n=(navigator.language||"").toLowerCase();return n.indexOf("ru")===0?"ru":n.indexOf("zh")===0?"zh":"en";})();
 document.documentElement.lang=lang==="zh"?"zh-CN":lang;
 var T=STR[lang];
+document.title=T.title;
+var kitchen=null;try{kitchen=KITCHENS[localStorage.getItem("lx_kitchen")]||null}catch(e){}
 var q=new URLSearchParams(location.search);
 var token=q.get("token"),failedHint=q.get("result")==="failed";
 var card=document.getElementById("card");
@@ -66,10 +111,23 @@ function refLine(){
  if(!v)return "";
  return '<p class="ref">'+esc(T.ref)+(lang==="zh"?"：":": ")+esc(v)+"</p>";
 }
-function show(icon,h,sub,withRef){
- card.innerHTML='<div class="big">'+icon+"</div><h1>"+esc(h)+"</h1><p>"+esc(sub)+"</p>"
- +'<a class="btn" href="order">'+esc(T.back)+"</a>"+(withRef?refLine():"");
+function callBtn(){
+ if(!kitchen)return "";
+ return '<a class="btn-line" href="tel:'+esc(kitchen.tel)+'">'+esc(T.call)+" · "+esc(kitchen.phone)+"</a>";
 }
+var OK='<svg class="okmark" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="34"/><path d="M22 37.5 32 47 51 27"/></svg>';
+function pop(html){card.innerHTML=html;card.classList.remove("pop");void card.offsetWidth;card.classList.add("pop")}
+function show(icon,h,sub,withRef,withCall){
+ pop('<div class="big">'+icon+"</div><h1>"+esc(h)+"</h1><p>"+esc(sub)+"</p>"
+ +(withCall?callBtn():"")
+ +'<br><a class="btn" href="order">'+esc(T.back)+"</a>"+(withRef?refLine():""));
+}
+function showPaid(){
+ clearCarts();
+ pop(OK+"<h1>"+esc(T.paid)+"</h1><p>"+esc(T.paidSub)+"</p>"
+ +'<a class="btn" href="order">'+esc(T.back)+"</a>"+refLine());
+}
+function showFailed(){show('<span class="fail" style="color:var(--ember)">✕</span>',T.failed,T.failedSub,true,true)}
 function waiting(){card.innerHTML='<div class="spin"></div><h1>'+esc(T.wait)+"</h1><p>"+esc(T.waitSub)+"</p>"}
 /* carts are cleared ONLY here, on confirmed payment — never before redirect */
 function clearCarts(){
@@ -77,34 +135,53 @@ function clearCarts(){
   if(k&&k.indexOf("lx_cart_")===0)localStorage.removeItem(k)}}catch(e){}
 }
 function fetchStatus(){
- return fetch(API+"/api/order-status/"+encodeURIComponent(token))
-  .then(function(r){return r.ok?r.json():null}).catch(function(){return null});
+ var ctl=("AbortController" in window)?new AbortController():null;
+ var t=ctl?setTimeout(function(){ctl.abort()},10000):null;
+ return fetch(API+"/api/order-status/"+encodeURIComponent(token),ctl?{signal:ctl.signal}:{})
+  .then(function(r){if(t)clearTimeout(t);return r.ok?r.json():null})
+  .catch(function(){if(t)clearTimeout(t);return null});
 }
-if(!token){show("❔",T.noToken,"",false)}
+var done=false;
+function handle(j){
+ if(done)return false;
+ if(j&&j.reference)reference=j.reference;
+ var s=j&&j.status;
+ if(s==="succeeded"||s==="paid"){done=true;showPaid();return true}
+ if(s==="failed"){done=true;showFailed();return true}
+ return false;
+}
+if(!token){show("❔",T.noToken,"",false,false)}
 else if(failedHint){
  /* the URL param is a hint, not truth — a raced webhook may have succeeded */
- show("✕",T.failed,T.failedSub,true);
+ showFailed();
  fetchStatus().then(function(j){
   if(j&&j.reference)reference=j.reference;
   var s=j&&j.status;
-  if(s==="succeeded"||s==="paid"){clearCarts();show("✓",T.paid,T.paidSub,true)}
-  else if(reference)show("✕",T.failed,T.failedSub,true);
+  if(s==="succeeded"||s==="paid"){done=true;showPaid()}
+  else if(reference)showFailed();
  });
 }
 else{
  waiting();
- var tries=0,MAX=70; /* ~5.5 min with backoff — webhooks can lag */
- (function poll(){
+ var tries=0,FAST=70; /* ~5.5 min of dense polling, then a slow forever-poll */
+ var slowShown=false;
+ function poll(){
+  if(done)return;
   tries++;
   fetchStatus().then(function(j){
-   if(j&&j.reference)reference=j.reference;
-   var s=j&&j.status;
-   if(s==="succeeded"||s==="paid"){clearCarts();show("✓",T.paid,T.paidSub,true);return}
-   if(s==="failed"){show("✕",T.failed,T.failedSub,true);return}
-   if(tries<MAX){setTimeout(poll,tries<10?3000:(tries<30?5000:8000))}
-   else{show("⏳",T.unknown,T.unknownSub,true)}
+   if(handle(j))return;
+   if(tries<FAST){setTimeout(poll,tries<10?3000:(tries<30?5000:8000))}
+   else{
+    if(!slowShown){slowShown=true;show("⏳",T.unknown,T.unknownSub,true,true)}
+    setTimeout(poll,30000); /* the page promises to keep checking — so keep checking */
+   }
   });
- })();
+ }
+ poll();
+ /* a suspended mobile tab misses its timers — nudge on return */
+ document.addEventListener("visibilitychange",function(){
+  if(document.visibilityState==="visible"&&!done)fetchStatus().then(handle);
+ });
 }
 })();
 </script>

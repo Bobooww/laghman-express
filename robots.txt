@@ -1,2 +1,8 @@
+# Note: GitHub Pages project sites are governed by the HOST-root robots.txt
+# (bobooww.github.io/robots.txt), which does not exist — this file is kept as
+# documentation and becomes live only if the site moves to its own domain.
+# /order-status is excluded from indexing via its own meta noindex tag.
 User-agent: *
 Allow: /
+
+Sitemap: https://bobooww.github.io/laghman-express/sitemap.xml

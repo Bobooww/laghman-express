@@ -3,13 +3,15 @@
    window load (React hydration is finished by then, so nothing mismatches).
    1) Every click on a legacy laghmanexpress.com/branch link is intercepted
       and sent to /order?k=<kitchen> — regardless of which render produced
-      the anchor.
+      the anchor. Modified clicks (cmd/ctrl/shift) keep their open-in-new-tab
+      behavior: the href is rewritten in place and the browser does the rest.
    2) First visit (no saved kitchen) shows a small trilingual location gate:
       nearest-by-geolocation, ZIP lookup, or manual pick. The choice lands in
       lx_kitchen / lx_region — the same keys the /order page uses. */
 (function () {
   "use strict";
   var BASE = "/laghman-express/";
+  var REDUCED = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var KITCHENS = [
     { slug: "20th-ave", api: true, region: "ny", name: "20th Ave",
       area: { en: "Bensonhurst", ru: "Бенсонхёрст", zh: "本森赫斯特" },
@@ -18,7 +20,7 @@
     { slug: "coney-island", api: true, region: "ny", name: "Coney Island Ave",
       area: { en: "Gravesend", ru: "Грейвсенд", zh: "格雷夫森德" },
       lat: 40.6060, lng: -73.9663,
-      zips: ["11223","11229","11224","11210","11235","11226"] },
+      zips: ["11223","11229","11224","11210","11226"] },
     { slug: "alpharetta", api: false, region: "ga", name: "Alpharetta, GA",
       area: { en: "Windward Plaza", ru: "Уиндворд-Плаза", zh: "温德沃德广场" },
       lat: 34.0900, lng: -84.2660,
@@ -28,14 +30,17 @@
     en: { h: "Which kitchen is yours?", sub: "Each kitchen cooks its own menu. We'll remember your pick.",
       near: "Find the nearest", zip: "ZIP code", go: "Go", skip: "I'll choose later",
       phoneOnly: "Phone orders", noZip: "We don't recognise that ZIP — pick a kitchen below.",
+      geoFail: "Couldn't get your location — pick a kitchen below.",
       locating: "Locating…" },
-    ru: { h: "Какая кухня ваша?", sub: "У каждой кухни своё меню. Мы запомним выбор.",
-      near: "Найти ближайшую", zip: "ZIP-код", go: "Ок", skip: "Выберу позже",
+    ru: { h: "Какая кухня ваша?", sub: "У каждой кухни своё меню. Мы запомним ваш выбор.",
+      near: "Найти ближайшую", zip: "ZIP-код", go: "ОК", skip: "Выберу позже",
       phoneOnly: "Заказ по телефону", noZip: "Не узнали этот ZIP — выберите кухню ниже.",
-      locating: "Определяю…" },
+      geoFail: "Не удалось определить местоположение — выберите кухню ниже.",
+      locating: "Определяем…" },
     zh: { h: "您常去哪家门店？", sub: "每家门店都有自己的菜单。我们会记住您的选择。",
-      near: "查找最近的", zip: "邮编", go: "确定", skip: "稍后再选",
+      near: "查找最近的门店", zip: "邮编", go: "确定", skip: "稍后再选",
       phoneOnly: "电话点餐", noZip: "无法识别该邮编——请在下方选择门店。",
+      geoFail: "无法获取位置——请在下方选择门店。",
       locating: "定位中…" }
   };
   function lang() {
@@ -47,30 +52,31 @@
   function save(slug, region) {
     try { localStorage.setItem("lx_kitchen", slug); localStorage.setItem("lx_region", region); } catch (e) {}
   }
-  function orderUrl() {
-    var k = savedKitchen();
-    return BASE + "order" + (k ? "?k=" + encodeURIComponent(k) : "");
-  }
 
   /* -- 1. bulletproof legacy-link interception (capture phase) -- */
+  function slugFor(href) { return href.indexOf("branch=2") !== -1 ? "coney-island" : "20th-ave"; }
   document.addEventListener("click", function (e) {
     var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
     if (!a) return;
     var h = a.getAttribute("href") || "";
-    if (h.indexOf("laghmanexpress.com/branch") !== -1) {
-      e.preventDefault(); e.stopPropagation();
-      var k = h.indexOf("branch=2") !== -1 ? "coney-island" : "20th-ave";
-      save(k, "ny");
-      location.href = BASE + "order?k=" + k;
+    if (h.indexOf("laghmanexpress.com/branch") === -1) return;
+    var k = slugFor(h);
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+      /* open-in-new-tab intent: fix the target, keep the gesture */
+      a.setAttribute("href", BASE + "order?k=" + k);
+      a.removeAttribute("target"); a.removeAttribute("rel");
+      return;
     }
+    e.preventDefault(); e.stopPropagation();
+    save(k, "ny");
+    location.href = BASE + "order?k=" + k;
   }, true);
 
   /* rewrite hrefs too, after hydration settles */
   function rewrite() {
     var as = document.querySelectorAll('a[href*="laghmanexpress.com/branch"]');
     for (var i = 0; i < as.length; i++) {
-      var k = (as[i].getAttribute("href") || "").indexOf("branch=2") !== -1 ? "coney-island" : "20th-ave";
-      as[i].setAttribute("href", BASE + "order?k=" + k);
+      as[i].setAttribute("href", BASE + "order?k=" + slugFor(as[i].getAttribute("href") || ""));
       as[i].removeAttribute("target"); as[i].removeAttribute("rel");
     }
   }
@@ -87,53 +93,114 @@
       if (KITCHENS[i].zips.indexOf(z) !== -1) return { kitchen: KITCHENS[i] };
     var p3 = z.slice(0, 3), n = +p3;
     if (n >= 300 && n <= 306) return { region: "ga" };
-    if ((n >= 100 && n <= 119) || p3 === "112") return { region: "ny" };
+    if (n >= 100 && n <= 119) return { region: "ny" };
     return null;
+  }
+  function fmt1(x) { var s = x.toFixed(1); return lang() === "ru" ? s.replace(".", ",") : s; }
+  function distLabel(mi) { return lang() === "zh" ? fmt1(mi * 1.609) + " 公里" : fmt1(mi) + (lang() === "ru" ? " мили" : " mi"); }
+  var scrollY0 = 0;
+  function lockScroll() {
+    scrollY0 = window.scrollY || 0;
+    document.body.style.top = -scrollY0 + "px";
+    document.body.style.position = "fixed";
+    document.body.style.left = "0"; document.body.style.right = "0";
+    document.body.style.width = "100%";
+  }
+  function unlockScroll() {
+    document.body.style.position = ""; document.body.style.top = "";
+    document.body.style.left = ""; document.body.style.right = ""; document.body.style.width = "";
+    window.scrollTo(0, scrollY0);
   }
   function showGate() {
     var T = STR[lang()];
-    var css = "#lxg{position:fixed;inset:0;z-index:99990;background:rgba(6,10,8,.82);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;font-family:'Instrument Sans',system-ui,sans-serif}" +
+    var css = "#lxg{position:fixed;inset:0;z-index:99990;background:rgba(6,10,8,.82);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;font-family:'Instrument Sans',system-ui,sans-serif;opacity:0;transition:opacity .3s ease}" +
+      "#lxg.in{opacity:1}" +
       "@media(min-width:700px){#lxg{align-items:center}}" +
-      "#lxg .p{width:100%;max-width:460px;background:#f7f2e6;color:#0f2417;border-radius:16px 16px 0 0;padding:1.4rem 1.3rem 1.7rem;box-shadow:0 -20px 60px rgba(0,0,0,.4)}" +
-      "@media(min-width:700px){#lxg .p{border-radius:16px}}" +
-      "#lxg h2{margin:0 0 .3rem;font-family:Georgia,'Noto Serif SC',serif;font-size:1.45rem;letter-spacing:-.01em}" +
+      "#lxg .p{width:100%;max-width:460px;max-height:88vh;max-height:88svh;overflow:auto;overscroll-behavior:contain;background:#f7f2e6;color:#0f2417;border-radius:16px 16px 0 0;padding:1.4rem 1.3rem calc(1.7rem + env(safe-area-inset-bottom));box-shadow:0 -20px 60px rgba(0,0,0,.4);transform:translateY(36px);transition:transform .35s cubic-bezier(.19,1,.22,1)}" +
+      "#lxg.in .p{transform:none}" +
+      "@media(min-width:700px){#lxg .p{border-radius:16px;padding-bottom:1.7rem}}" +
+      "#lxg h2{margin:0 0 .3rem;font-family:'Fraunces',Georgia,'Noto Serif SC',serif;font-size:1.45rem;letter-spacing:-.01em}" +
       "#lxg .s{margin:0 0 1rem;color:rgba(15,36,23,.65);font-size:.9rem;line-height:1.45}" +
       "#lxg .row{display:flex;gap:.5rem;margin-bottom:.9rem;flex-wrap:wrap}" +
-      "#lxg button,#lxg input{font:inherit}" +
+      "#lxg button,#lxg input{font:inherit;touch-action:manipulation}" +
+      "#lxg button:focus-visible,#lxg input:focus-visible{outline:2px solid #8a6420;outline-offset:2px}" +
       "#lxg .near{flex:1;min-width:150px;background:#e0b25c;border:0;border-radius:100px;padding:.7rem 1rem;font-weight:600;cursor:pointer}" +
       "#lxg .zipw{display:flex;gap:.4rem;flex:1;min-width:140px}" +
       "#lxg .zip{flex:1;min-width:0;border:1px solid rgba(15,36,23,.3);border-radius:100px;padding:.65rem .9rem;background:#fff}" +
       "#lxg .zgo{border:1px solid rgba(15,36,23,.3);background:none;border-radius:100px;padding:.65rem 1rem;cursor:pointer;font-weight:600}" +
-      "#lxg .k{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:#fff;border:1px solid rgba(15,36,23,.18);border-radius:10px;padding:.75rem .9rem;margin:.4rem 0;cursor:pointer}" +
+      "#lxg .k{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:#fff;border:1px solid rgba(15,36,23,.18);border-radius:10px;padding:.85rem .9rem;margin:.4rem 0;cursor:pointer}" +
       "#lxg .k b{display:block;font-size:.98rem}" +
-      "#lxg .k small{color:rgba(15,36,23,.6)}" +
-      "#lxg .k .d{color:#8a6420;font-weight:600;font-size:.85rem;white-space:nowrap;margin-left:.6rem}" +
+      "#lxg .k small{color:rgba(15,36,23,.7)}" +
+      "#lxg .k .d{color:#8a6420;font-weight:600;font-size:.85rem;white-space:nowrap;margin-left:.6rem;font-variant-numeric:tabular-nums}" +
       "#lxg .err{color:#8a2b12;font-size:.82rem;min-height:1.1em;margin:.2rem 0 0}" +
-      "#lxg .skip{display:block;margin:.7rem auto 0;background:none;border:0;color:rgba(15,36,23,.55);text-decoration:underline;cursor:pointer;font-size:.85rem}";
+      "#lxg .skip{display:block;margin:.7rem auto 0;background:none;border:0;color:rgba(15,36,23,.6);text-decoration:underline;cursor:pointer;font-size:.85rem;padding:.4rem .8rem}" +
+      "@media(prefers-reduced-motion:reduce){#lxg,#lxg .p{transition:none}}";
     var st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
     var ov = document.createElement("div"); ov.id = "lxg";
+    ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true");
+    ov.setAttribute("aria-labelledby", "lxg-h");
     var p = document.createElement("div"); p.className = "p"; ov.appendChild(p);
-    var h = document.createElement("h2"); h.textContent = T.h; p.appendChild(h);
+    var h = document.createElement("h2"); h.id = "lxg-h"; h.textContent = T.h; p.appendChild(h);
     var s = document.createElement("p"); s.className = "s"; s.textContent = T.sub; p.appendChild(s);
     var row = document.createElement("div"); row.className = "row";
     var near = document.createElement("button"); near.className = "near"; near.textContent = T.near;
+    if (!navigator.geolocation) near.hidden = true;
     var zipw = document.createElement("span"); zipw.className = "zipw";
     var zip = document.createElement("input"); zip.className = "zip"; zip.placeholder = T.zip;
     zip.inputMode = "numeric"; zip.maxLength = 5; zip.autocomplete = "postal-code";
+    zip.setAttribute("aria-label", T.zip);
     var zgo = document.createElement("button"); zgo.className = "zgo"; zgo.textContent = T.go;
     zipw.appendChild(zip); zipw.appendChild(zgo);
     row.appendChild(near); row.appendChild(zipw); p.appendChild(row);
-    var err = document.createElement("p"); err.className = "err";
+    var err = document.createElement("p"); err.className = "err"; err.setAttribute("aria-live", "polite");
     var list = document.createElement("div"); p.appendChild(list); p.appendChild(err);
     var skip = document.createElement("button"); skip.className = "skip"; skip.textContent = T.skip;
     p.appendChild(skip);
 
-    function close() { ov.remove(); }
+    var lastFocus = document.activeElement;
+    function close() {
+      ov.remove(); unlockScroll();
+      if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
+      document.removeEventListener("keydown", onKey, true);
+    }
+    function dismiss() {
+      try { sessionStorage.setItem("lx_gate_skip", "1"); } catch (e) {}
+      close();
+    }
     function choose(k) {
       save(k.slug, k.region);
       close();
       if (k.api) location.href = BASE + "order?k=" + k.slug;
       /* non-orderable kitchen: stay on the site, choice remembered */
+    }
+    function onKey(e) {
+      if (e.key === "Escape") { dismiss(); return; }
+      if (e.key !== "Tab") return;
+      var f = Array.prototype.filter.call(
+        ov.querySelectorAll("button,a[href],input"),
+        function (n) { return !n.disabled && !n.hidden && n.offsetParent !== null; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && (document.activeElement === first || !ov.contains(document.activeElement))) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && (document.activeElement === last || !ov.contains(document.activeElement))) {
+        e.preventDefault(); first.focus();
+      }
+    }
+    function card(k, withDist) {
+      var b = document.createElement("button"); b.className = "k"; b.type = "button";
+      var w = document.createElement("span");
+      var bb = document.createElement("b"); bb.textContent = k.name; w.appendChild(bb);
+      var sm = document.createElement("small");
+      sm.textContent = k.area[lang()] + (k.api ? "" : " · " + STR[lang()].phoneOnly);
+      w.appendChild(sm); b.appendChild(w);
+      if (withDist && k._d != null) {
+        var d = document.createElement("span"); d.className = "d";
+        d.textContent = distLabel(k._d);
+        b.appendChild(d);
+      }
+      b.onclick = function () { choose(k); };
+      return b;
     }
     function renderList(pos) {
       list.innerHTML = "";
@@ -142,59 +209,41 @@
         arr.forEach(function (k) { k._d = haversine(pos.lat, pos.lng, k.lat, k.lng); });
         arr.sort(function (a, b) { return a._d - b._d; });
       }
-      arr.forEach(function (k) {
-        var b = document.createElement("button"); b.className = "k"; b.type = "button";
-        var w = document.createElement("span");
-        var bb = document.createElement("b"); bb.textContent = k.name; w.appendChild(bb);
-        var sm = document.createElement("small");
-        sm.textContent = k.area[lang()] + (k.api ? "" : " · " + STR[lang()].phoneOnly);
-        w.appendChild(sm); b.appendChild(w);
-        if (k._d != null) {
-          var d = document.createElement("span"); d.className = "d";
-          d.textContent = lang() === "zh" ? (k._d * 1.609).toFixed(1) + " 公里" : k._d.toFixed(1) + " mi";
-          b.appendChild(d);
-        }
-        b.onclick = function () { choose(k); };
-        list.appendChild(b);
-      });
+      arr.forEach(function (k) { list.appendChild(card(k, !!pos)); });
     }
     near.onclick = function () {
-      if (!navigator.geolocation) return;
       near.textContent = T.locating; near.disabled = true;
       navigator.geolocation.getCurrentPosition(function (po) {
-        near.textContent = T.near; near.disabled = false;
+        near.textContent = T.near; near.disabled = false; err.textContent = "";
         renderList({ lat: po.coords.latitude, lng: po.coords.longitude });
-      }, function () { near.textContent = T.near; near.disabled = false; }, { timeout: 8000 });
+      }, function () {
+        near.textContent = T.near; near.disabled = false;
+        err.textContent = T.geoFail;
+      }, { timeout: 8000, maximumAge: 600000 });
     };
     function zipGo() {
       var r = regionByZip(zip.value.trim());
       err.textContent = "";
       if (!r) { err.textContent = T.noZip; return; }
-      if (r.kitchen) { choose(r.kitchen); return; }
-      /* region known: reorder list, preselect first orderable */
-      var arr = KITCHENS.filter(function (k) { return k.region === r.region; })
-        .concat(KITCHENS.filter(function (k) { return k.region !== r.region; }));
+      if (r.kitchen && r.kitchen.api) { choose(r.kitchen); return; }
+      /* region (or non-orderable kitchen) known: reorder, let the user pick */
+      var rg = r.kitchen ? r.kitchen.region : r.region;
+      var arr = KITCHENS.filter(function (k) { return k.region === rg; })
+        .concat(KITCHENS.filter(function (k) { return k.region !== rg; }));
       list.innerHTML = "";
-      arr.forEach(function (k) {
-        var b = document.createElement("button"); b.className = "k"; b.type = "button";
-        var w = document.createElement("span");
-        var bb = document.createElement("b"); bb.textContent = k.name; w.appendChild(bb);
-        var sm = document.createElement("small");
-        sm.textContent = k.area[lang()] + (k.api ? "" : " · " + STR[lang()].phoneOnly);
-        w.appendChild(sm); b.appendChild(w);
-        b.onclick = function () { choose(k); };
-        list.appendChild(b);
-      });
+      arr.forEach(function (k) { list.appendChild(card(k, false)); });
     }
     zgo.onclick = zipGo;
     zip.addEventListener("keydown", function (e) { if (e.key === "Enter") zipGo(); });
-    skip.onclick = function () {
-      try { sessionStorage.setItem("lx_gate_skip", "1"); } catch (e) {}
-      close();
-    };
-    ov.addEventListener("click", function (e) { if (e.target === ov) skip.onclick(); });
+    skip.onclick = dismiss;
+    ov.addEventListener("click", function (e) { if (e.target === ov) dismiss(); });
+    document.addEventListener("keydown", onKey, true);
     renderList(null);
     document.body.appendChild(ov);
+    lockScroll();
+    if (REDUCED) { ov.classList.add("in"); }
+    else { requestAnimationFrame(function () { requestAnimationFrame(function () { ov.classList.add("in"); }); }); }
+    near.hidden ? zip.focus() : near.focus();
   }
 
   function boot() {
