@@ -499,6 +499,7 @@ function startHosted(){
 /* ---- boot ---- */
 applyLang();renderGate();
 var saved=null;try{saved=localStorage.getItem("lx_kitchen")}catch(e){}
+var qk=new URLSearchParams(location.search).get("k");if(qk)saved=qk;
 var savedK=null;
 if(saved){for(var i=0;i<KITCHENS.length;i++)if(KITCHENS[i].slug===saved&&KITCHENS[i].api)savedK=KITCHENS[i];}
 if(savedK){pickKitchen(savedK.slug)}
