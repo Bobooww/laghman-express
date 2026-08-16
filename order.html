@@ -201,7 +201,7 @@ var KITCHENS=[
   addr:"2376 Coney Island Ave, Brooklyn, NY 11223",phone:"(718) 233-8333",tel:"+17182338333",lat:40.6060,lng:-73.9663,
   hours:{en:"Daily 11 am – 10 pm",ru:"Ежедневно 11:00–22:00",zh:"每日 11:00–22:00"}},
  {slug:"emmons-ave",api:false,name:"Emmons Ave",area:{en:"Sheepshead Bay",ru:"Шипсхед-Бэй",zh:"羊头湾"},
-  addr:"1809 Emmons Ave, Brooklyn, NY 11235",phone:"(718) 646-4441",tel:"+17186464441",lat:40.5838,lng:-73.9425,
+  addr:"1809 Emmons Ave, Brooklyn, NY 11235",phone:null,tel:null,lat:40.5838,lng:-73.9425,
   hours:{en:"Opening soon as Laghman Express",ru:"Скоро откроется как Laghman Express",zh:"即将以 Laghman Express 开业"}},
  {slug:"alpharetta",api:false,name:"Alpharetta, GA",area:{en:"Windward Plaza",ru:"Уиндворд-Плаза",zh:"温德沃德广场"},
   addr:"3070 Windward Plaza X1, Alpharetta, GA 30005",phone:"(470) 448-1919",tel:"+14704481919",lat:34.0900,lng:-84.2660,
@@ -211,7 +211,7 @@ var STR={
  en:{back:"← Back to site",gateEyebrow:"Order pickup",gateH1:"Pick your kitchen.",
   gateSub:"Each kitchen cooks its own menu with its own prices — today's menu comes straight from the kitchen's register.",
   nearMe:"Find the nearest kitchen",geoNo:"Location unavailable — pick a kitchen below.",
-  orderHere:"Order here",phoneOnly:"Phone orders",switchKitchen:"switch kitchen",
+  orderHere:"Order here",phoneOnly:"Phone orders",comingSoon:"Opening soon",switchKitchen:"switch kitchen",
   liveNote:"Live menu and prices from this kitchen's register. Pickup only for now.",
   loading:"Loading the menu…",menuFail:"The menu is taking a break. Try again in a minute.",
   cart:"Your order",yourOrder:"Your order",empty:"Nothing here yet.",subtotal:"Subtotal",tax:"Tax",total:"Total",
@@ -225,7 +225,7 @@ var STR={
  ru:{back:"← На сайт",gateEyebrow:"Заказ с собой",gateH1:"Выберите кухню.",
   gateSub:"У каждой кухни своё меню и свои цены — сегодняшнее меню приходит прямо с кассы.",
   nearMe:"Найти ближайшую кухню",geoNo:"Геолокация недоступна — выберите кухню ниже.",
-  orderHere:"Заказать здесь",phoneOnly:"Заказ по телефону",switchKitchen:"сменить кухню",
+  orderHere:"Заказать здесь",phoneOnly:"Заказ по телефону",comingSoon:"Скоро открытие",switchKitchen:"сменить кухню",
   liveNote:"Живое меню и цены с кассы этой кухни. Пока только самовывоз.",
   loading:"Загружаю меню…",menuFail:"Меню отдыхает. Попробуйте через минуту.",
   cart:"Ваш заказ",yourOrder:"Ваш заказ",empty:"Пока пусто.",subtotal:"Сумма",tax:"Налог",total:"Итого",
@@ -239,7 +239,7 @@ var STR={
  zh:{back:"← 返回主页",gateEyebrow:"下单自取",gateH1:"选择门店。",
   gateSub:"每家门店都有自己的菜单和价格——今日菜单直接来自门店收银系统。",
   nearMe:"查找最近的门店",geoNo:"无法获取位置——请在下方选择门店。",
-  orderHere:"在线点餐",phoneOnly:"电话点餐",switchKitchen:"换一家门店",
+  orderHere:"在线点餐",phoneOnly:"电话点餐",comingSoon:"即将开业",switchKitchen:"换一家门店",
   liveNote:"实时菜单与价格，直接来自该门店收银系统。目前仅支持自取。",
   loading:"菜单加载中…",menuFail:"菜单暂时不可用，请稍后再试。",
   cart:"我的订单",yourOrder:"我的订单",empty:"还没有加菜。",subtotal:"小计",tax:"税费",total:"合计",
@@ -281,15 +281,15 @@ function renderGate(){
  if(userPos){list.forEach(function(k){k._d=haversine(userPos.lat,userPos.lng,k.lat,k.lng)});
   list.sort(function(a,b){return a._d-b._d});}
  list.forEach(function(k,idx){
-  var el=document.createElement(k.api?"button":"a");
+  var el=document.createElement(k.api?"button":(k.tel?"a":"div"));
   el.className="loc"+(k.api?"":" phone")+(userPos&&idx===0&&k.api?" nearest":"");
   if(k.api){el.onclick=function(){pickKitchen(k.slug)}}
-  else{el.href="tel:"+k.tel}
+  else if(k.tel){el.href="tel:"+k.tel}
   el.innerHTML='<span class="area">'+esc(k.area[lang])+'</span>'
   +(k._d!=null?'<span class="dist">'+(lang==="zh"?(k._d*1.609).toFixed(1)+" "+T.km:k._d.toFixed(1)+" "+T.mi)+"</span>":"")
   +"<h3>"+esc(k.name)+"</h3>"
   +'<span class="addr">'+esc(k.addr)+"<br>"+esc(k.hours[lang])+"</span><br>"
-  +'<span class="tag">'+(k.api?T.orderHere:T.phoneOnly+" · "+k.phone)+"</span>";
+  +'<span class="tag">'+(k.api?T.orderHere:(k.tel?T.phoneOnly+" · "+k.phone:T.comingSoon))+"</span>";
   wrap.appendChild(el);});
 }
 $("geoBtn").onclick=function(){
