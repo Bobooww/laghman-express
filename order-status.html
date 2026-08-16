@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Order status — Laghman Express</title>
+<link rel="icon" href="assets/logo-symbol.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Instrument+Sans:wght@400;600&family=Playfair+Display:wght@600&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0b120e;--ink2:#111b14;--cream:#f6f1e4;--cream60:rgba(246,241,228,.62);
+ --gold:#e0b25c;--golds:#f0d49a;--ember:#e2612b;
+ --display:"Fraunces","Playfair Display","Noto Serif SC",Georgia,serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--cream);font-family:"Instrument Sans",system-ui,sans-serif;
+ min-height:100svh;display:grid;place-items:center;padding:1.5rem}
+.card{max-width:480px;width:100%;background:var(--ink2);border:1px solid rgba(224,178,92,.25);
+ border-radius:14px;padding:2rem 1.6rem;text-align:center}
+h1{font-family:var(--display);font-weight:600;font-size:1.7rem;margin:.9rem 0 .5rem;letter-spacing:-.01em}
+:lang(zh-CN) h1{letter-spacing:0}
+p{color:var(--cream60);margin:.3rem 0;line-height:1.55}
+.big{font-size:2.6rem}
+.spin{display:inline-block;width:28px;height:28px;border:3px solid rgba(246,241,228,.25);
+ border-top-color:var(--gold);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+a.btn{display:inline-block;margin-top:1.2rem;padding:.8rem 1.5rem;border-radius:100px;
+ background:var(--gold);color:#22160a;font-weight:600;text-decoration:none}
+.ref{margin-top:1rem;font-size:.78rem;color:var(--cream60);word-break:break-all}
+</style>
+</head>
+<body>
+<div class="card" id="card"><div class="spin"></div></div>
+<script>
+(function(){
+"use strict";
+var API="https://orders-service-production-ab21.up.railway.app";
+var STR={
+ en:{wait:"Confirming your payment…",waitSub:"This usually takes a few seconds.",
+  paid:"Order paid — thank you!",paidSub:"The kitchen is being notified. Pick it up at the counter; bring this screen if asked.",
+  failed:"Payment didn't go through",failedSub:"No charge was completed. You can try again or call the kitchen.",
+  unknown:"We're double-checking your payment",unknownSub:"If you were charged, don't pay again — the kitchen will reconcile it. Keep this page reference.",
+  noToken:"This link is missing its order reference.",back:"Back to menu",ref:"Reference"},
+ ru:{wait:"Подтверждаем оплату…",waitSub:"Обычно это занимает несколько секунд.",
+  paid:"Заказ оплачен — спасибо!",paidSub:"Кухня получает уведомление. Заберите заказ у стойки; покажите этот экран, если попросят.",
+  failed:"Оплата не прошла",failedSub:"Списания не было. Попробуйте ещё раз или позвоните на кухню.",
+  unknown:"Проверяем вашу оплату",unknownSub:"Если деньги списались — не платите повторно, кухня сверит платёж. Сохраните эту страницу.",
+  noToken:"В ссылке нет номера заказа.",back:"К меню",ref:"Номер"},
+ zh:{wait:"正在确认支付…",waitSub:"通常只需几秒钟。",
+  paid:"支付成功——谢谢！",paidSub:"门店已收到通知。请到柜台取餐；如有需要请出示本页面。",
+  failed:"支付未完成",failedSub:"没有产生扣款。您可以重试，或致电门店。",
+  unknown:"正在核对您的支付",unknownSub:"如果已扣款，请勿重复支付——门店会核对账目。请保留本页面。",
+  noToken:"链接中缺少订单编号。",back:"返回菜单",ref:"编号"}
+};
+var lang=(function(){try{var s=localStorage.getItem("lx_lang");if(s==="ru"||s==="zh"||s==="en")return s;}catch(e){}
+ var n=(navigator.language||"").toLowerCase();return n.indexOf("ru")===0?"ru":n.indexOf("zh")===0?"zh":"en";})();
+document.documentElement.lang=lang==="zh"?"zh-CN":lang;
+var T=STR[lang];
+var q=new URLSearchParams(location.search);
+var token=q.get("token"),failed=q.get("result")==="failed";
+var card=document.getElementById("card");
+function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+var reference=null;
+function show(icon,h,sub,withRef){
+ card.innerHTML='<div class="big">'+icon+"</div><h1>"+esc(h)+"</h1><p>"+esc(sub)+"</p>"
+ +'<a class="btn" href="order">'+esc(T.back)+"</a>"
+ +(withRef&&(reference||token)?'<p class="ref">'+esc(T.ref)+": "+esc(reference||token.slice(0,20)+"…")+"</p>":"");
+}
+function waiting(){card.innerHTML='<div class="spin"></div><h1>'+esc(T.wait)+"</h1><p>"+esc(T.waitSub)+"</p>"}
+if(!token){show("❔",T.noToken,"",false)}
+else if(failed){show("✕",T.failed,T.failedSub,true)}
+else{
+ waiting();
+ var tries=0;
+ (function poll(){
+  tries++;
+  fetch(API+"/api/order-status/"+encodeURIComponent(token))
+  .then(function(r){return r.ok?r.json():null})
+  .then(function(j){
+   if(j&&j.reference)reference=j.reference;
+   var s=j&&(j.status||j.paymentStatus);
+   if(s==="succeeded"||s==="paid"){show("✓",T.paid,T.paidSub,true);return}
+   if(s==="failed"){show("✕",T.failed,T.failedSub,true);return}
+   if(tries<40){setTimeout(poll,3000)}else{show("⏳",T.unknown,T.unknownSub,true)}
+  })
+  .catch(function(){if(tries<40)setTimeout(poll,4000);else show("⏳",T.unknown,T.unknownSub,true)});
+ })();
+}
+})();
+</script>
+</body>
+</html>
