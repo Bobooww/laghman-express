@@ -65,6 +65,9 @@ a{color:inherit;text-decoration:none}
 #gate .sub{color:var(--cream60);margin:.7rem 0 1.4rem;max-width:52ch}
 .gacts{display:flex;flex-wrap:wrap;align-items:center;gap:.7rem;margin-bottom:1.2rem}
 .geonote{color:var(--cream60);font-size:.85rem;margin:0 0 1rem}
+.zipw{display:inline-flex;gap:.4rem}
+.zip{width:9ch;border:1px solid rgba(246,241,228,.3);border-radius:100px;padding:.7rem 1rem;background:var(--ink2);color:var(--cream);font:inherit}
+.zip::placeholder{color:var(--cream40)}
 .rgn{margin:1.4rem 0 .6rem;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
 .locs{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
 .loc{position:relative;text-align:left;border:1px solid rgba(246,241,228,.16);border-radius:10px;padding:1.1rem 1.1rem 1.2rem;
@@ -185,6 +188,7 @@ a{color:inherit;text-decoration:none}
   <p class="sub" data-i="gateSub"></p>
   <div class="gacts">
     <button class="btn btn-gold" id="geoBtn" data-i="nearMe"></button>
+    <span class="zipw"><input id="zipIn" class="zip" inputmode="numeric" maxlength="5" autocomplete="postal-code"><button class="btn btn-ghost" id="zipGo"></button></span>
   </div>
   <p class="geonote" id="geoNote" hidden></p>
   <div id="locWrap"></div>
@@ -234,16 +238,16 @@ var API="https://orders-service-production-ab21.up.railway.app";
    browser for nearest-kitchen sorting — never sent anywhere. */
 var KITCHENS=[
  {slug:"20th-ave",api:true,region:"ny",name:"20th Ave",area:{en:"Bensonhurst",ru:"Бенсонхёрст",zh:"本森赫斯特"},
-  addr:"6201 20th Ave, Brooklyn, NY 11204",phone:"(718) 232-0525",tel:"+17182320525",lat:40.6175,lng:-73.9903,
+  zips:["11204","11219","11214","11228","11230","11218","11220"],addr:"6201 20th Ave, Brooklyn, NY 11204",phone:"(718) 232-0525",tel:"+17182320525",lat:40.6175,lng:-73.9903,
   hours:{en:"Daily 11 am – 9 pm",ru:"Ежедневно 11:00–21:00",zh:"每日 11:00–21:00"}},
  {slug:"coney-island",api:true,region:"ny",name:"Coney Island Ave",area:{en:"Gravesend",ru:"Грейвсенд",zh:"格雷夫森德"},
-  addr:"2376 Coney Island Ave, Brooklyn, NY 11223",phone:"(718) 233-8333",tel:"+17182338333",lat:40.6060,lng:-73.9663,
+  zips:["11223","11229","11224","11210","11226"],addr:"2376 Coney Island Ave, Brooklyn, NY 11223",phone:"(718) 233-8333",tel:"+17182338333",lat:40.6060,lng:-73.9663,
   hours:{en:"Daily 11 am – 10 pm",ru:"Ежедневно 11:00–22:00",zh:"每日 11:00–22:00"}},
  {slug:"emmons-ave",api:false,region:"ny",name:"Emmons Ave",area:{en:"Sheepshead Bay",ru:"Шипсхед-Бэй",zh:"羊头湾"},
-  addr:"1809 Emmons Ave, Brooklyn, NY 11235",phone:null,tel:null,lat:40.5838,lng:-73.9425,
+  zips:["11235"],addr:"1809 Emmons Ave, Brooklyn, NY 11235",phone:null,tel:null,lat:40.5838,lng:-73.9425,
   hours:{en:"Opening soon as Laghman Express",ru:"Скоро откроется как Laghman Express",zh:"即将以 Laghman Express 开业"}},
  {slug:"alpharetta",api:false,region:"ga",name:"Alpharetta, GA",area:{en:"Windward Plaza",ru:"Уиндворд-Плаза",zh:"温德沃德广场"},
-  addr:"3070 Windward Plaza X1, Alpharetta, GA 30005",phone:"(470) 448-1919",tel:"+14704481919",lat:34.0900,lng:-84.2660,
+  zips:["30005","30004","30022","30009","30076","30097","30024"],addr:"3070 Windward Plaza X1, Alpharetta, GA 30005",phone:"(470) 448-1919",tel:"+14704481919",lat:34.0900,lng:-84.2660,
   hours:{en:"Hours vary — call ahead",ru:"Часы уточняйте по телефону",zh:"营业时间请电话确认"}}
 ];
 var REGIONS={ny:{en:"Brooklyn, New York",ru:"Бруклин, Нью-Йорк",zh:"纽约布鲁克林"},
@@ -251,7 +255,7 @@ var REGIONS={ny:{en:"Brooklyn, New York",ru:"Бруклин, Нью-Йорк",zh
 var STR={
  en:{back:"← Back to site",gateEyebrow:"Order pickup",gateH1:"Pick your kitchen.",
   gateSub:"Each kitchen cooks its own menu with its own prices — today's menu comes straight from the kitchen's register.",
-  nearMe:"Find the nearest kitchen",locating:"Locating…",geoNo:"Location unavailable — pick a kitchen below.",
+  nearMe:"Find the nearest kitchen",locating:"Locating…",geoNo:"Location unavailable — pick a kitchen below.",zipPh:"ZIP code",zipGo:"Go",zipNo:"We don't recognise that ZIP — pick a kitchen below.",
   orderHere:"Order here",phoneOnly:"Phone orders",comingSoon:"Opening soon",nearest:"Nearest kitchen",
   alsoIn:"Also in",switchKitchen:"switch kitchen",
   liveNote:"Live menu and prices from this kitchen's register. Pickup only for now.",
@@ -270,7 +274,7 @@ var STR={
   add:"Add",mi:"mi",km:"km",choose:"Choose an option",required:"required"},
  ru:{back:"← На сайт",gateEyebrow:"Заказ на самовывоз",gateH1:"Выберите кухню.",
   gateSub:"У каждой кухни своё меню и свои цены — сегодняшнее меню приходит прямо с кассы.",
-  nearMe:"Найти ближайшую кухню",locating:"Определяю…",geoNo:"Геолокация недоступна — выберите кухню ниже.",
+  nearMe:"Найти ближайшую кухню",locating:"Определяю…",geoNo:"Геолокация недоступна — выберите кухню ниже.",zipPh:"ZIP-код",zipGo:"Ок",zipNo:"Не узнали этот ZIP — выберите кухню ниже.",
   orderHere:"Заказать здесь",phoneOnly:"Заказ по телефону",comingSoon:"Скоро открытие",nearest:"Ближайшая кухня",
   alsoIn:"Ещё есть в:",switchKitchen:"сменить кухню",
   liveNote:"Живое меню и цены с кассы этой кухни. Пока только самовывоз.",
@@ -289,7 +293,7 @@ var STR={
   add:"Добавить",mi:"мили",km:"км",choose:"Выберите вариант",required:"обязательно"},
  zh:{back:"← 返回主页",gateEyebrow:"下单自取",gateH1:"选择门店。",
   gateSub:"每家门店都有自己的菜单和价格——今日菜单直接来自门店收银系统。",
-  nearMe:"查找最近的门店",locating:"定位中…",geoNo:"无法获取位置——请在下方选择门店。",
+  nearMe:"查找最近的门店",locating:"定位中…",geoNo:"无法获取位置——请在下方选择门店。",zipPh:"邮编",zipGo:"确定",zipNo:"无法识别该邮编——请在下方选择门店。",
   orderHere:"在线点餐",phoneOnly:"电话点餐",comingSoon:"即将开业",nearest:"离您最近",
   alsoIn:"其他地区门店：",switchKitchen:"换一家门店",
   liveNote:"实时菜单与价格，直接来自该门店收银系统。目前仅支持自取。",
@@ -341,6 +345,7 @@ function nameNode(raw){
 }
 function applyLang(){
  document.documentElement.lang=lang==="zh"?"zh-CN":lang;T=STR[lang];
+ var zi=$("zipIn"),zg=$("zipGo");if(zi){zi.placeholder=T.zipPh}if(zg){zg.textContent=T.zipGo}
  try{localStorage.setItem("lx_lang",lang)}catch(e){}
  var els=document.querySelectorAll("[data-i]");
  for(var i=0;i<els.length;i++){els[i].textContent=T[els[i].getAttribute("data-i")]||""}
@@ -416,6 +421,25 @@ function renderGate(){
   }
  });
 }
+function zipLookup(){
+ var v=$("zipIn").value.trim(),note=$("geoNote");
+ note.hidden=true;
+ if(!/^\d{5}$/.test(v)){note.textContent=T.zipNo;note.hidden=false;return}
+ var hit=null;
+ KITCHENS.forEach(function(k){if((k.zips||[]).indexOf(v)!==-1&&!hit)hit=k});
+ if(hit){
+  if(hit.api){pickKitchen(hit.slug);return}
+  try{localStorage.setItem("lx_region",hit.region)}catch(e){}
+  userPos={lat:hit.lat,lng:hit.lng};renderGate();return}
+ var n=+v.slice(0,3),rg=null;
+ if(n>=300&&n<=306)rg="ga";else if(n>=100&&n<=119)rg="ny";
+ if(rg){try{localStorage.setItem("lx_region",rg)}catch(e){}
+  userPos=null;renderGate();
+  window.scrollTo({top:$("locWrap").offsetTop-90,behavior:"smooth"});return}
+ note.textContent=T.zipNo;note.hidden=false;
+}
+$("zipGo").onclick=zipLookup;
+$("zipIn").addEventListener("keydown",function(e){if(e.key==="Enter")zipLookup()});
 $("geoBtn").onclick=function(){
  var btn=$("geoBtn"),note=$("geoNote");
  if(!navigator.geolocation){note.textContent=T.geoNo;note.hidden=false;return}
