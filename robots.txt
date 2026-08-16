@@ -1,4 +1,2 @@
-# Private review build — not for indexing until the owner approves launch.
-# Mirror of the page-level noindex. Swap for an allow-all + sitemap at launch.
 User-agent: *
-Disallow: /
+Allow: /
