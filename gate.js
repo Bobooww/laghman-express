@@ -28,8 +28,8 @@
   ];
   var STR = {
     en: { h: "Which kitchen is yours?", sub: "Each kitchen cooks its own menu. We'll remember your pick.",
-      near: "Find the nearest", zip: "ZIP code", go: "Go", skip: "I'll choose later",
-      phoneOnly: "Phone orders", noZip: "We don't recognise that ZIP — pick a kitchen below.",
+      near: "Find the nearest kitchen", zip: "ZIP code", go: "Go", skip: "I'll choose later",
+      phoneOnly: "Phone orders", noZip: "We don't recognize that ZIP — pick a kitchen below.",
       geoFail: "Couldn't get your location — pick a kitchen below.",
       locating: "Locating…" },
     ru: { h: "Какая кухня ваша?", sub: "У каждой кухни своё меню. Мы запомним ваш выбор.",
@@ -119,7 +119,7 @@
       "#lxg .p{width:100%;max-width:460px;max-height:88vh;max-height:88svh;overflow:auto;overscroll-behavior:contain;background:#f7f2e6;color:#0f2417;border-radius:16px 16px 0 0;padding:1.4rem 1.3rem calc(1.7rem + env(safe-area-inset-bottom));box-shadow:0 -20px 60px rgba(0,0,0,.4);transform:translateY(36px);transition:transform .35s cubic-bezier(.19,1,.22,1)}" +
       "#lxg.in .p{transform:none}" +
       "@media(min-width:700px){#lxg .p{border-radius:16px;padding-bottom:1.7rem}}" +
-      "#lxg h2{margin:0 0 .3rem;font-family:'Fraunces',Georgia,'Noto Serif SC',serif;font-size:1.45rem;letter-spacing:-.01em}" +
+      "#lxg h2{margin:0 0 .3rem;font-family:'Fraunces','Noto Serif SC',Georgia,serif;font-size:1.45rem;letter-spacing:-.01em}" +
       "#lxg .s{margin:0 0 1rem;color:rgba(15,36,23,.65);font-size:.9rem;line-height:1.45}" +
       "#lxg .row{display:flex;gap:.5rem;margin-bottom:.9rem;flex-wrap:wrap}" +
       "#lxg button,#lxg input{font:inherit;touch-action:manipulation}" +

@@ -13,6 +13,7 @@
 <meta property="og:image" content="https://bobooww.github.io/laghman-express/assets/og-card.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0b120e">
+<link rel="canonical" href="https://bobooww.github.io/laghman-express/order-status">
 <link rel="icon" href="assets/favicon-64.png" type="image/png" sizes="64x64">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,7 +27,7 @@
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--ink);color:var(--cream);font-family:"Instrument Sans",system-ui,sans-serif;
  min-height:100vh;min-height:100svh;display:grid;place-items:center;
- padding:1.5rem;padding-left:max(1.5rem,env(safe-area-inset-left));
+ padding:1.5rem;padding-top:max(1.5rem,env(safe-area-inset-top));padding-left:max(1.5rem,env(safe-area-inset-left));
  padding-right:max(1.5rem,env(safe-area-inset-right));
  padding-bottom:max(1.5rem,env(safe-area-inset-bottom))}
 button,a{touch-action:manipulation}
@@ -55,6 +56,8 @@ a.btn{display:inline-block;margin-top:1.2rem;padding:.8rem 1.5rem;border-radius:
 a.btn:active{transform:scale(.97)}
 a.btn-line{display:inline-block;margin:1rem .3rem 0;padding:.75rem 1.3rem;border-radius:100px;
  border:1px solid rgba(246,241,228,.3);color:var(--cream);font-weight:600;text-decoration:none}
+.sum{margin:.9rem auto 0;max-width:320px;text-align:left;font-size:.88rem;color:var(--cream60)}
+.sum div{display:flex;justify-content:space-between;gap:1rem;padding:.15rem 0}
 .ref{margin-top:1rem;font-size:.78rem;color:var(--cream60);word-break:break-all;
  font-variant-numeric:tabular-nums}
 @media(prefers-reduced-motion:reduce){
@@ -105,7 +108,7 @@ var q=new URLSearchParams(location.search);
 var token=q.get("token"),failedHint=q.get("result")==="failed";
 var card=document.getElementById("card");
 var reference=null;
-function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML.replace(/"/g,"&quot;")}
 function refLine(){
  var v=reference||(token?token.slice(0,20)+"…":"");
  if(!v)return "";
@@ -118,21 +121,44 @@ function callBtn(){
 var OK='<svg class="okmark" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="34"/><path d="M22 37.5 32 47 51 27"/></svg>';
 function pop(html){card.innerHTML=html;card.classList.remove("pop");void card.offsetWidth;card.classList.add("pop")}
 function show(icon,h,sub,withRef,withCall){
- pop('<div class="big">'+icon+"</div><h1>"+esc(h)+"</h1><p>"+esc(sub)+"</p>"
+ pop('<div class="big" aria-hidden="true">'+icon+"</div><h1>"+esc(h)+"</h1><p>"+esc(sub)+"</p>"
  +(withCall?callBtn():"")
  +'<br><a class="btn" href="order">'+esc(T.back)+"</a>"+(withRef?refLine():""));
 }
 function showPaid(){
+ var lines=payCartLines();
  clearCarts();
  pop(OK+"<h1>"+esc(T.paid)+"</h1><p>"+esc(T.paidSub)+"</p>"
+ +summaryHtml(lines)
  +'<a class="btn" href="order">'+esc(T.back)+"</a>"+refLine());
 }
 function showFailed(){show('<span class="fail" style="color:var(--ember)">✕</span>',T.failed,T.failedSub,true,true)}
 function waiting(){card.innerHTML='<div class="spin"></div><h1>'+esc(T.wait)+"</h1><p>"+esc(T.waitSub)+"</p>"}
-/* carts are cleared ONLY here, on confirmed payment — never before redirect */
+/* carts are cleared ONLY here, on confirmed payment — never before redirect.
+   Scoped to the kitchen that was paid (lx_pay_slug); a cart being built at the
+   OTHER kitchen must survive. Falls back to clearing all if the slug is gone. */
+function payCartLines(){
+ try{var s=localStorage.getItem("lx_pay_slug");if(!s)return null;
+  var c=JSON.parse(localStorage.getItem("lx_cart_"+s)||"[]");
+  return Array.isArray(c)&&c.length?c:null}catch(e){return null}
+}
 function clearCarts(){
- try{for(var i=localStorage.length-1;i>=0;i--){var k=localStorage.key(i);
-  if(k&&k.indexOf("lx_cart_")===0)localStorage.removeItem(k)}}catch(e){}
+ try{
+  var s=localStorage.getItem("lx_pay_slug");
+  if(s){localStorage.removeItem("lx_cart_"+s);localStorage.removeItem("lx_pay_slug")}
+  else{for(var i=localStorage.length-1;i>=0;i--){var k=localStorage.key(i);
+   if(k&&k.indexOf("lx_cart_")===0)localStorage.removeItem(k)}}
+ }catch(e){}
+}
+function summaryHtml(lines){
+ if(!lines)return "";
+ var out='<div class="sum">';
+ for(var i=0;i<Math.min(lines.length,8);i++){
+  var l=lines[i],nm=String(l.name||"").replace(/[\u3000-\u303F\u3400-\u4DBF\u4E00-\u9FFF\uFF00-\uFFEF]+/g,function(m){return lang==="zh"?m:""}).trim()||String(l.name||"");
+  out+="<div><span>"+esc(nm)+"</span><span>×"+(+l.quantity||1)+"</span></div>";
+ }
+ if(lines.length>8)out+="<div><span>…</span><span></span></div>";
+ return out+"</div>";
 }
 function fetchStatus(){
  var ctl=("AbortController" in window)?new AbortController():null;
@@ -154,16 +180,25 @@ if(!token){show("❔",T.noToken,"",false,false)}
 else if(failedHint){
  /* the URL param is a hint, not truth — a raced webhook may have succeeded */
  showFailed();
- fetchStatus().then(function(j){
-  if(j&&j.reference)reference=j.reference;
-  var s=j&&j.status;
-  if(s==="succeeded"||s==="paid"){done=true;showPaid()}
-  else if(reference)showFailed();
+ var fhTries=0;
+ function fhCheck(){
+  fetchStatus().then(function(j){
+   if(done)return;
+   if(j&&j.reference)reference=j.reference;
+   var s=j&&j.status;
+   if(s==="succeeded"||s==="paid"){done=true;showPaid();return}
+   if(reference)showFailed();
+   if(++fhTries<4)setTimeout(fhCheck,fhTries*5000);
+  });
+ }
+ fhCheck();
+ document.addEventListener("visibilitychange",function(){
+  if(document.visibilityState==="visible"&&!done)fetchStatus().then(handle);
  });
 }
 else{
  waiting();
- var tries=0,FAST=70; /* ~5.5 min of dense polling, then a slow forever-poll */
+ var tries=0,FAST=70; /* ~7.5 min of dense polling, then a slow forever-poll */
  var slowShown=false;
  function poll(){
   if(done)return;

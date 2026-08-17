@@ -30,6 +30,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Instrument+Sans:wght@400;600;700&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://bobooww.github.io/laghman-express/#org","name":"Laghman Express","url":"https://bobooww.github.io/laghman-express/","logo":"https://bobooww.github.io/laghman-express/assets/icon-512.png"},{"@type":"Restaurant","name":"Laghman Express — 20th Avenue","parentOrganization":{"@id":"https://bobooww.github.io/laghman-express/#org"},"servesCuisine":"Central Asian","telephone":"+1-718-232-0525","priceRange":"$$","address":{"@type":"PostalAddress","streetAddress":"6201 20th Ave","addressLocality":"Brooklyn","addressRegion":"NY","postalCode":"11204","addressCountry":"US"},"geo":{"@type":"GeoCoordinates","latitude":40.6175,"longitude":-73.9903},"hasMenu":"https://bobooww.github.io/laghman-express/order?k=20th-ave","potentialAction":{"@type":"OrderAction","target":"https://bobooww.github.io/laghman-express/order?k=20th-ave","deliveryMethod":"http://purl.org/goodrelations/v1#DeliveryModePickup"}},{"@type":"Restaurant","name":"Laghman Express — Coney Island Avenue","parentOrganization":{"@id":"https://bobooww.github.io/laghman-express/#org"},"servesCuisine":"Central Asian","telephone":"+1-718-233-8333","priceRange":"$$","address":{"@type":"PostalAddress","streetAddress":"2376 Coney Island Ave","addressLocality":"Brooklyn","addressRegion":"NY","postalCode":"11223","addressCountry":"US"},"geo":{"@type":"GeoCoordinates","latitude":40.606,"longitude":-73.9663},"hasMenu":"https://bobooww.github.io/laghman-express/order?k=coney-island","potentialAction":{"@type":"OrderAction","target":"https://bobooww.github.io/laghman-express/order?k=coney-island","deliveryMethod":"http://purl.org/goodrelations/v1#DeliveryModePickup"}}]}</script>
 <style>
 /* Laghman Express /order v2 — standalone page, same design tokens as the site.
    Talks to the live ordering API; prices are server-authoritative.
@@ -70,13 +71,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .eyebrow{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:600}
 
 .hdr{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:.8rem;
-  padding:.7rem max(4vw,env(safe-area-inset-right)) .7rem max(4vw,env(safe-area-inset-left));
+  padding:max(.7rem,env(safe-area-inset-top)) max(4vw,env(safe-area-inset-right)) .7rem max(4vw,env(safe-area-inset-left));
   background:rgba(11,18,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(224,178,92,.2)}
 .hdr img{width:30px;height:30px;object-fit:contain}
 .hdr b{font-family:var(--display);font-size:1rem;white-space:nowrap}
 .hdr .back{color:var(--cream60);font-size:.85rem;margin-right:auto;padding:.4rem 0}
 .lang{display:inline-flex;gap:2px;border:1px solid rgba(246,241,228,.28);border-radius:100px;padding:2px}
-.lang button{padding:.34rem .6rem;border-radius:100px;font-size:.72rem;font-weight:700;color:var(--cream60)}
+.lang button{padding:.45rem .65rem;border-radius:100px;font-size:.72rem;font-weight:700;color:var(--cream60)}
 .lang button.on{background:var(--gold);color:#22160a}
 .kbtn{display:inline-flex;align-items:center;gap:.45rem;border:1px solid rgba(224,178,92,.4);border-radius:100px;
   padding:.45rem .8rem;font-size:.8rem;color:var(--golds)}
@@ -86,8 +87,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   .hdr .back{display:none}
   .hdr b{margin-right:auto}
   #kname{max-width:26vw}
-  .chips{top:47px}
-  .cat{scroll-margin-top:104px}
 }
 @media(max-width:400px){.hdr b{display:none}.hdr-brand{margin-right:auto}}
 
@@ -142,16 +141,16 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 .mhead h1{font-size:clamp(1.5rem,4.2vw,2.2rem)}
 .mhead .sw{font-size:.8rem;color:var(--cream60);text-decoration:underline;cursor:pointer}
 .mnote{color:var(--cream60);font-size:.85rem;margin:.2rem 0 1rem}
-.chips{position:sticky;top:52px;z-index:30;display:flex;gap:.5rem;overflow-x:auto;padding:.7rem 0;
+.chips{position:sticky;top:var(--hdrh,52px);z-index:30;display:flex;gap:.5rem;overflow-x:auto;padding:.7rem 0;
   background:linear-gradient(var(--ink) 82%,transparent);scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:0 0 auto;padding:.45rem .95rem;border-radius:100px;border:1px solid rgba(246,241,228,.2);
+.chip{flex:0 0 auto;padding:.55rem 1rem;border-radius:100px;border:1px solid rgba(246,241,228,.2);
   font-size:.85rem;color:var(--cream60);white-space:nowrap;
   transition:background .25s var(--ease),color .25s var(--ease),transform .2s var(--ease)}
 .chip:active{transform:scale(.96)}
 .chip .alt{display:none}
 .chip.on{background:var(--paper);color:var(--pined);border-color:var(--paper);font-weight:600}
-.cat{margin:1.6rem 0 .4rem;scroll-margin-top:118px}
+.cat{margin:1.6rem 0 .4rem;scroll-margin-top:calc(var(--hdrh,52px) + 66px)}
 .cat h2{font-size:1.3rem;color:var(--golds)}
 .cat h2 .alt{display:block;font-size:.72rem;color:var(--cream60);font-family:var(--sans);letter-spacing:0}
 .items{display:grid;gap:.6rem;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));margin-top:.7rem}
@@ -163,7 +162,7 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 .nm .zh-main{font-family:"Noto Serif SC",serif}
 .sheet .nm .alt,.sheet .alt{color:rgba(15,36,23,.72)}
 .it .pr{color:var(--golds);font-weight:600;white-space:nowrap}
-.it .add{flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:var(--gold);color:#22160a;font-size:1.15rem;
+.it .add{flex:0 0 auto;width:42px;height:42px;border-radius:50%;background:var(--gold);color:#22160a;font-size:1.15rem;
   font-weight:700;display:grid;place-items:center;transition:background .3s var(--ease),transform .2s var(--ease)}
 @media(hover:hover){.it .add:hover{background:var(--golds)}}
 .it .add:active{transform:scale(.9)}
@@ -199,8 +198,9 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 .line{display:flex;align-items:center;gap:.7rem;padding:.55rem 0;border-bottom:1px solid rgba(15,36,23,.1)}
 .line .nm{flex:1;font-size:.92rem;line-height:1.3}
 .line .nm small{display:block;color:rgba(15,36,23,.72);font-size:.78rem}
+.line .lp{font-size:.85rem;font-weight:600;color:rgba(15,36,23,.78);white-space:nowrap;font-variant-numeric:tabular-nums}
 .qty{display:inline-flex;align-items:center;gap:.35rem}
-.qty button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(15,36,23,.3);display:grid;place-items:center;
+.qty button{width:42px;height:42px;border-radius:50%;border:1px solid rgba(15,36,23,.3);display:grid;place-items:center;
   font-weight:700;font-size:1.05rem;transition:transform .2s var(--ease)}
 .qty button:active{transform:scale(.9)}
 .qty b{min-width:1.2ch;text-align:center}
@@ -221,7 +221,7 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 .ferr{display:block;color:var(--err);font-size:.76rem;margin-top:.2rem}
 .err{color:var(--err);font-size:.85rem;margin-top:.6rem;min-height:1.2em}
 .notice{background:#fdf3d8;border:1px solid #e8d5a0;border-radius:8px;padding:.6rem .8rem;font-size:.85rem;margin:.6rem 0}
-.xclose{position:sticky;top:0;float:right;font-size:1.15rem;opacity:.65;padding:.55rem .75rem;margin:-.3rem -.4rem 0 0}
+.xclose{position:sticky;top:0;float:right;font-size:1.15rem;opacity:.65;padding:.7rem .85rem;margin:-.4rem -.5rem 0 0}
 .grp{margin:.8rem 0;padding-left:.5rem;border-left:3px solid transparent}
 .grp.grp-err{border-left-color:var(--err)}
 .grp.grp-err h3{color:var(--err)}
@@ -252,10 +252,11 @@ button.loc:active,a.loc:active{transform:scale(.99)}
   <span class="lang" id="lang"></span>
 </header>
 
+<main>
 <section id="gate" class="shell">
-  <p class="eyebrow" data-i="gateEyebrow"></p>
-  <h1 data-i="gateH1"></h1>
-  <p class="sub" data-i="gateSub"></p>
+  <p class="eyebrow" data-i="gateEyebrow">Order pickup</p>
+  <h1 data-i="gateH1">Pick your kitchen.</h1>
+  <p class="sub" data-i="gateSub">Each kitchen cooks its own menu with its own prices — today's menu comes straight from the kitchen's register. Hand-pulled laghman noodles in Brooklyn (20th Ave, Coney Island Ave) and Alpharetta, GA.</p>
   <div class="gacts">
     <button class="btn btn-gold" id="geoBtn" data-i="nearMe"></button>
     <span class="zipw"><input id="zipIn" class="zip" inputmode="numeric" maxlength="5" autocomplete="postal-code"><button class="btn btn-ghost" id="zipGo"></button></span>
@@ -270,9 +271,11 @@ button.loc:active,a.loc:active{transform:scale(.99)}
     <span class="sw" id="mSwitch" data-i="switchKitchen"></span>
   </div>
   <p class="mnote" data-i="liveNote"></p>
+  <p class="notice" id="hoursNote" aria-live="polite" hidden></p>
   <div class="chips" id="chips"></div>
   <div id="cats"></div>
 </section>
+</main>
 
 <div id="bar"><button class="btn btn-gold" id="barBtn"><span data-i="cart"></span><span id="barTot"></span></button></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -312,9 +315,11 @@ var API="https://orders-service-production-ab21.up.railway.app";
 var KITCHENS=[
  {slug:"20th-ave",api:true,region:"ny",name:"20th Ave",area:{en:"Bensonhurst",ru:"Бенсонхёрст",zh:"本森赫斯特"},
   zips:["11204","11219","11214","11228","11230","11218","11220"],addr:"6201 20th Ave, Brooklyn, NY 11204",phone:"(718) 232-0525",tel:"+17182320525",lat:40.6175,lng:-73.9903,
+  oh:{o:660,c:1260},tz:"America/New_York",
   hours:{en:"Daily 11 am – 9 pm",ru:"Ежедневно 11:00–21:00",zh:"每日 11:00–21:00"}},
  {slug:"coney-island",api:true,region:"ny",name:"Coney Island Ave",area:{en:"Gravesend",ru:"Грейвсенд",zh:"格雷夫森德"},
   zips:["11223","11229","11224","11210","11226"],addr:"2376 Coney Island Ave, Brooklyn, NY 11223",phone:"(718) 233-8333",tel:"+17182338333",lat:40.6060,lng:-73.9663,
+  oh:{o:660,c:1320},tz:"America/New_York",
   hours:{en:"Daily 11 am – 10 pm",ru:"Ежедневно 11:00–22:00",zh:"每日 11:00–22:00"}},
  {slug:"emmons-ave",api:false,region:"ny",name:"Emmons Ave",area:{en:"Sheepshead Bay",ru:"Шипсхед-Бэй",zh:"羊头湾"},
   zips:["11235"],addr:"1809 Emmons Ave, Brooklyn, NY 11235",phone:null,tel:null,lat:40.5838,lng:-73.9425,
@@ -327,25 +332,26 @@ var REGIONS={ny:{en:"Brooklyn, New York",ru:"Бруклин, Нью-Йорк",zh
              ga:{en:"Alpharetta, Georgia",ru:"Альфаретта, Джорджия",zh:"佐治亚州阿尔法利塔"}};
 var STR={
  en:{back:"← Back to site",gateEyebrow:"Order pickup",gateH1:"Pick your kitchen.",
-  gateSub:"Each kitchen cooks its own menu with its own prices — today's menu comes straight from the kitchen's register.",
-  nearMe:"Find the nearest kitchen",locating:"Locating…",geoNo:"Location unavailable — pick a kitchen below.",zipPh:"ZIP code",zipGo:"Go",zipNo:"We don't recognise that ZIP — pick a kitchen below.",
+  gateSub:"Each kitchen cooks its own menu with its own prices — today’s menu comes straight from the kitchen’s register.",
+  nearMe:"Find the nearest kitchen",locating:"Locating…",geoNo:"Location unavailable — pick a kitchen below.",zipPh:"ZIP code",zipGo:"Go",zipNo:"We don’t recognize that ZIP — pick a kitchen below.",
   orderHere:"Order here",phoneOnly:"Phone orders",comingSoon:"Opening soon",nearest:"Nearest kitchen",
   alsoIn:"Also in",switchKitchen:"switch kitchen",
-  liveNote:"Live menu and prices from this kitchen's register. Pickup only for now.",
+  liveNote:"Live menu and prices from this kitchen’s register. Pickup only for now.",
   loading:"Loading the menu…",menuFail:"The menu is taking a break.",retry:"Try again",orCall:"or call",
   cart:"Your order",yourOrder:"Your order",empty:"Nothing here yet.",subtotal:"Subtotal",tax:"Tax",total:"Total",
   item1:"item",itemN:"items",
-  pickupOnly:"Pickup order — grab it at the counter.",quoteWait:"Checking today's prices…",
-  quoteFail:"Couldn't check prices.",removedGone:"Some items are no longer on today's menu — we removed them from your order.",
+  pickupOnly:"Pickup order — grab it at the counter.",quoteWait:"Checking today’s prices…",
+  quoteFail:"Couldn’t check prices.",removedGone:"Some items are no longer on today’s menu — we removed them from your order.",
   payOnline:"Pay",name:"Name",phone:"Phone",email:"Email",
   fName:"Enter your name",fPhone:"Enter your phone number",fEmail:"Enter a valid email",
-  payNote:"Payment opens on Clover's secure page — your card details never touch this site. You won't be charged until you confirm there.",
+  payNote:"Payment opens on Clover’s secure page — your card details never touch this site. You won’t be charged until you confirm there.",
   pickupAtLbl:"Pickup at",
-  notActive:"Online payment isn't live yet at this kitchen. Call and we'll take your order:",
+  notActive:"Online payment isn’t live yet at this kitchen. Call and we’ll take your order:",
   call:"Call",priceChanged:"The kitchen updated its menu — totals refreshed, please review.",
   netErr:"Connection hiccup. Try again.",
   add:"Add",mi:"mi",km:"km",choose:"Choose an option",required:"required",
   tooMany:"Choose at most {n}",close:"Close",qtyUp:"Add one more",qtyDown:"Remove one",
+  closedNow:"The kitchen is closed right now — opens at {t}. You’re welcome to browse the menu meanwhile.",
   langLbl:"Language",docTitle:"Order Pickup — Laghman Express | Brooklyn & Alpharetta"},
  ru:{back:"← На сайт",gateEyebrow:"Заказ на самовывоз",gateH1:"Выберите кухню.",
   gateSub:"У каждой кухни своё меню и свои цены — сегодняшнее меню приходит прямо с кассы.",
@@ -367,7 +373,8 @@ var STR={
   netErr:"Сбой связи. Попробуйте ещё раз.",
   add:"Добавить",mi:"мили",km:"км",choose:"Выберите вариант",required:"обязательно",
   tooMany:"Не больше {n}",close:"Закрыть",qtyUp:"Добавить ещё",qtyDown:"Убрать одну",
-  langLbl:"Язык",docTitle:"Заказ самовывоза — Laghman Express"},
+  closedNow:"Кухня сейчас закрыта — откроется в {t}. Меню можно посмотреть уже сейчас.",
+  langLbl:"Язык",docTitle:"Заказ на самовывоз — Laghman Express"},
  zh:{back:"← 返回主页",gateEyebrow:"下单自取",gateH1:"选择门店。",
   gateSub:"每家门店都有自己的菜单和价格——今日菜单直接来自门店收银系统。",
   nearMe:"查找最近的门店",locating:"定位中…",geoNo:"无法获取位置——请在下方选择门店。",zipPh:"邮编",zipGo:"确定",zipNo:"无法识别该邮编——请在下方选择门店。",
@@ -388,6 +395,7 @@ var STR={
   netErr:"网络不稳定，请重试。",
   add:"加入",mi:"英里",km:"公里",choose:"请选择",required:"必选",
   tooMany:"最多可选 {n} 项",close:"关闭",qtyUp:"再加一份",qtyDown:"减少一份",
+  closedNow:"门店暂已打烊——{t} 开门。您可以先浏览菜单。",
   langLbl:"语言",docTitle:"在线点餐 — Laghman Express"}
 };
 var lang=(function(){try{var s=localStorage.getItem("lx_lang");if(s==="ru"||s==="zh"||s==="en")return s;}catch(e){}
@@ -399,6 +407,16 @@ var quoteSeq=0,quoteTimer=null,modCache={},lastTotal=null;
 
 function $(id){return document.getElementById(id)}
 function money(c){return "$"+(c/100).toFixed(2)}
+/* fetch with a 12s timeout — a hung request must surface as a retryable error */
+function tfetch(url,opts){
+ opts=opts||{};
+ if("AbortController" in window){
+  var ctl=new AbortController();opts.signal=ctl.signal;
+  var t=setTimeout(function(){ctl.abort()},12000);
+  return fetch(url,opts).finally(function(){clearTimeout(t)});
+ }
+ return fetch(url,opts);
+}
 function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
 function uuid4(){
  if(crypto.randomUUID)return crypto.randomUUID();
@@ -422,7 +440,7 @@ function nameNode(raw){
  if(lang==="zh"&&p.zh){main=p.zh;alt=p.latin}
  else{main=p.latin||p.zh;alt=(lang==="zh"||!p.latin)?"":p.zh}
  wrap.appendChild(el("span",(lang==="zh"&&p.zh)?"zh-main":null,main));
- if(alt)wrap.appendChild(el("small","alt",alt));
+ if(alt){var altEl=el("small","alt",alt);altEl.lang=(lang==="zh")?"en":"zh-CN";wrap.appendChild(altEl)}
  return wrap;
 }
 /* join a label with text: no extra space after a full-width colon */
@@ -444,7 +462,10 @@ function applyLang(){
  [["en","EN"],["ru","RU"],["zh","中文"]].forEach(function(p){
   var b=el("button",p[0]===lang?"on":null,p[1]);
   b.setAttribute("aria-pressed",p[0]===lang?"true":"false");
-  b.onclick=function(){lang=p[0];applyLang();renderGate();
+  b.onclick=function(){lang=p[0];function setHdrVar(){var hd=document.querySelector(".hdr");
+ if(hd)document.documentElement.style.setProperty("--hdrh",Math.round(hd.getBoundingClientRect().height)+"px")}
+window.addEventListener("resize",setHdrVar);setHdrVar();
+applyLang();renderGate();setHdrVar();
    if(state.slug){renderMenuChrome();if(state.menu)renderMenu()}
    ckMode=null;renderCart();};
   lb.appendChild(b);});
@@ -512,7 +533,8 @@ function renderGate(){
    farBox.appendChild(el("p","rgn",REGIONS[rg][lang]));
    var grid=el("div","locs");list.forEach(function(k){grid.appendChild(locCard(k,false))});
    farBox.appendChild(grid);
-   farBtn.onclick=function(){farBox.hidden=!farBox.hidden};
+   farBtn.setAttribute("aria-expanded","false");
+   farBtn.onclick=function(){farBox.hidden=!farBox.hidden;farBtn.setAttribute("aria-expanded",farBox.hidden?"false":"true")};
    wrap.appendChild(farBtn);wrap.appendChild(farBox);
   }else{
    wrap.appendChild(el("p","rgn",REGIONS[rg][lang]));
@@ -577,10 +599,32 @@ function pickKitchen(slug){
  if(state.cart.length)requestQuote();
 }
 function kitchen(){for(var i=0;i<KITCHENS.length;i++)if(KITCHENS[i].slug===state.slug)return KITCHENS[i];return null}
+/* open/closed by the KITCHEN's local clock, not the visitor's */
+function kitchenNowMin(k){
+ try{
+  var p=new Intl.DateTimeFormat("en-US",{timeZone:k.tz,hour:"numeric",minute:"numeric",hour12:false}).formatToParts(new Date());
+  var hh=0,mm=0;p.forEach(function(x){if(x.type==="hour")hh=+x.value;if(x.type==="minute")mm=+x.value});
+  return (hh===24?0:hh)*60+mm;
+ }catch(e){return null}
+}
+function fmtTime(min){
+ var hh=Math.floor(min/60),mm=min%60,mmp=(mm<10?"0":"")+mm;
+ if(lang==="en"){var ap=hh>=12?"pm":"am",h12=hh%12||12;return h12+":"+mmp+" "+ap}
+ return hh+":"+mmp;
+}
+function updateHoursNote(){
+ var k=kitchen(),note=$("hoursNote");
+ if(!k||!k.oh){note.hidden=true;return}
+ var m=kitchenNowMin(k);
+ if(m==null){note.hidden=true;return}
+ if(m>=k.oh.o&&m<k.oh.c){note.hidden=true}
+ else{note.textContent=T.closedNow.replace("{t}",fmtTime(k.oh.o));note.hidden=false}
+}
 function renderMenuChrome(){
  var k=kitchen();if(!k)return;
  $("mTitle").textContent=k.name;
- $("kbtn").hidden=false;$("kname").textContent=k.name;
+ $("kbtn").hidden=false;$("kname").textContent=k.name;$("kbtn").setAttribute("aria-label",T.switchKitchen+" — "+k.name);
+ updateHoursNote();
 }
 $("mSwitch").onclick=$("kbtn").onclick=function(){
  $("menu").style.display="none";$("gate").style.display="block";
@@ -597,7 +641,7 @@ function menuSkeleton(){
 function loadMenu(){
  menuSkeleton();$("chips").innerHTML="";
  var s=state.slug;
- fetch(API+"/api/menu/"+s).then(function(r){if(!r.ok)throw 0;return r.json()})
+ tfetch(API+"/api/menu/"+s).then(function(r){if(!r.ok)throw 0;return r.json()})
  .then(function(m){
   if(state.slug!==s)return;
   state.menu=m;renderMenu();pruneCart();
@@ -651,7 +695,7 @@ function renderMenu(){
    d.appendChild(nm);
    d.appendChild(el("span","pr",money(it.priceCents)));
    var b=el("button","add","+");b.type="button";
-   b.setAttribute("aria-label",T.add+" "+it.name);
+   var an=splitName(it.name);b.setAttribute("aria-label",T.add+" "+((lang==="zh"&&an.zh)?an.zh:(an.latin||an.zh)));
    b.onclick=function(e){e.stopPropagation();tryAdd(it,b)};
    d.onclick=function(){if(!b.disabled)tryAdd(it,b)};
    d.appendChild(b);grid.appendChild(d);});
@@ -679,7 +723,7 @@ function tryAdd(it,btn){
  var s=state.slug; /* a kitchen switch mid-fetch must never add into the new cart */
  var cached=modCache[it.id];
  var p=cached?Promise.resolve(cached)
-  :fetch(API+"/api/menu/"+s+"/items/"+it.id+"/modifiers")
+  :tfetch(API+"/api/menu/"+s+"/items/"+it.id+"/modifiers")
    .then(function(r){
     if(r.status===404)return {groups:[]};
     if(!r.ok)throw 0;
@@ -688,7 +732,7 @@ function tryAdd(it,btn){
   if(state.slug!==s){restore();return}
   modCache[it.id]=m;
   var groups=(m.groups||[]).filter(function(g){return g.modifiers&&g.modifiers.length});
-  if(!groups.length){addLine(it,[],[]);flash();return}
+  if(!groups.length){addLine(it,[],[],it.priceCents);flash();return}
   restore();
   modCtx={item:it,groups:groups,priceMap:{}};openMod();
  }).catch(function(){
@@ -706,7 +750,7 @@ function modTotal(){
  if(!modCtx)return;
  var t=modCtx.item.priceCents||0;
  document.querySelectorAll("#modGroups input:checked").forEach(function(i){
-  t+=modCtx.priceMap[i.value]||0});
+  t+=modCtx.priceMap[i.name.slice(1)+"|"+i.value]||0});
  $("modAdd").textContent=T.add+" · "+money(t);
 }
 function openMod(){
@@ -723,7 +767,7 @@ function openMod(){
   (g.modifiers||[]).forEach(function(mo){
    /* DOM-built: modifier ids/names are API data and must never be
       concatenated into markup (attribute-context XSS) */
-   modCtx.priceMap[mo.id]=mo.priceCents||0;
+   modCtx.priceMap[gi+"|"+mo.id]=mo.priceCents||0;
    var l=el("label","m");
    var inp=document.createElement("input");
    inp.type=multi?"checkbox":"radio";inp.name="g"+gi;inp.value=mo.id;
@@ -764,7 +808,9 @@ $("modAdd").onclick=function(){
  if(badIdx>=0){$("modErr").textContent=badMsg;
   document.getElementById("grp-"+badIdx).scrollIntoView({block:"center",behavior:SMOOTH});return}
  closeSheet("modOv");
- addLine(modCtx.item,ids,names);
+ var unit=(modCtx.item.priceCents||0);
+ document.querySelectorAll("#modGroups input:checked").forEach(function(i){unit+=modCtx.priceMap[i.name.slice(1)+"|"+i.value]||0});
+ addLine(modCtx.item,ids,names,unit);
 };
 
 /* ---- cart ---- */
@@ -780,17 +826,19 @@ function loadCart(){
     l.modifierIds=l.modifierIds.filter(function(x){return typeof x==="string"});
     if(!Array.isArray(l.mods))l.mods=[];
     if(typeof l.key!=="string")l.key=l.itemId+"|"+l.modifierIds.slice().sort().join(",");
+    if(typeof l.unitCents!=="number")delete l.unitCents;
     return l;});
  }catch(e){return []}
 }
 function saveCart(){try{localStorage.setItem(cartKey(),JSON.stringify(state.cart))}catch(e){}}
 /* a cart edit invalidates both the stale notice and the bar's remembered total */
 function hideStaleNotice(){$("cartNotice").hidden=true;lastTotal=null}
-function addLine(it,modIds,modNames){
+function addLine(it,modIds,modNames,unitCents){
  var key=it.id+"|"+modIds.slice().sort().join(",");
  var ln=null;for(var i=0;i<state.cart.length;i++)if(state.cart[i].key===key)ln=state.cart[i];
  if(ln){ln.quantity=Math.min(20,ln.quantity+1)}
- else state.cart.push({key:key,itemId:it.id,name:it.name,mods:modNames,modifierIds:modIds,quantity:1});
+ else state.cart.push({key:key,itemId:it.id,name:it.name,mods:modNames,modifierIds:modIds,quantity:1,
+  unitCents:(typeof unitCents==="number"?unitCents:it.priceCents)});
  hideStaleNotice();saveCart();updateBar(true);requestQuote();
 }
 function cartCount(){var n=0;state.cart.forEach(function(l){n+=l.quantity});return n}
@@ -815,12 +863,14 @@ function lockBody(){
  lockY=window.scrollY||window.pageYOffset||0;
  document.body.style.top=-lockY+"px";
  document.body.classList.add("locked");
+ document.querySelectorAll("header.hdr,main,#bar").forEach(function(n){try{n.inert=true}catch(e){}});
 }
 function unlockBody(){
  if(document.querySelector(".overlay.open"))return;
  if(!document.body.classList.contains("locked"))return; /* never restore a stale lockY */
  document.body.classList.remove("locked");
  document.body.style.top="";
+ document.querySelectorAll("header.hdr,main,#bar").forEach(function(n){try{n.inert=false}catch(e){}});
  window.scrollTo(0,lockY);
 }
 function openSheet(id){
@@ -863,6 +913,7 @@ function renderCart(){
   var nm=el("span","nm");nm.appendChild(nameNode(l.name));
   if(l.mods&&l.mods.length){nm.appendChild(el("small",null,l.mods.join(", ")))}
   d.appendChild(nm);
+  if(typeof l.unitCents==="number")d.appendChild(el("span","lp",money(l.unitCents*l.quantity)));
   var q=el("span","qty");
   var minus=el("button",null,"–");minus.type="button";
   minus.setAttribute("aria-label",T.qtyDown);
@@ -909,7 +960,7 @@ function requestQuote(now){
  clearTimeout(quoteTimer);
  var seq=++quoteSeq;
  quoteTimer=setTimeout(function(){
-  fetch(API+"/api/quotes",{method:"POST",headers:{"Content-Type":"application/json"},
+  tfetch(API+"/api/quotes",{method:"POST",headers:{"Content-Type":"application/json"},
    body:JSON.stringify({locationSlug:state.slug,fulfillment:"pickup",
     cart:state.cart.map(function(l){return{itemId:l.itemId,quantity:l.quantity,modifierIds:l.modifierIds}})})})
   .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j}})})
@@ -922,10 +973,11 @@ function requestQuote(now){
     /* an item may have left today's menu — refresh menu + prune, then the
        user can retry against the pruned cart */
     if(state.quoteFails===1&&state.menu){
-     fetch(API+"/api/menu/"+state.slug).then(function(r){return r.ok?r.json():null})
+     tfetch(API+"/api/menu/"+state.slug).then(function(r){return r.ok?r.json():null})
      .then(function(m){if(m&&seq===quoteSeq){state.menu=m;renderMenu();pruneCart();renderCart()}});
     }
-    $("cartErr").textContent=res.j&&res.j.error||T.netErr;
+    /* server error strings are English — show localized copy instead */
+    $("cartErr").textContent=(res.j&&res.j.code==="MENU_UNAVAILABLE")?T.menuFail:T.netErr;
    }
    renderTotals();updateBar();})
   .catch(function(){
@@ -938,7 +990,7 @@ function requestQuote(now){
 /* ---- checkout ---- */
 function fetchCfg(){
  var s=state.slug;if(!s)return;
- fetch(API+"/api/checkout/config/"+s)
+ tfetch(API+"/api/checkout/config/"+s)
  .then(function(r){if(!r.ok)throw 0;return r.json()})
  .then(function(c){if(state.slug!==s)return;state.cfg=c;renderCheckout()})
  .catch(function(){if(state.slug!==s)return;
@@ -949,6 +1001,10 @@ var ckMode=null; /* build the form once; rebuilding on every qty tap would wipe 
 function renderCheckout(){
  var w=$("ckWrap");
  if(!state.cart.length){w.innerHTML="";ckMode=null;return}
+ if(!state.cfg){ /* config still loading — never flash the call-us fallback */
+  if(ckMode!=="wait"){ckMode="wait";w.innerHTML="";
+   w.appendChild(el("p","muted",T.quoteWait))}
+  return}
  var mode=hostedActive()?"pay":"call";
  if(ckMode===mode){syncPayBtn();return}
  /* rebuilding must not lose what the user already typed (e.g. language switch) */
@@ -958,7 +1014,7 @@ function renderCheckout(){
  if(mode==="pay"){
   var saved={};try{saved=JSON.parse(localStorage.getItem("lx_customer")||"{}")||{}}catch(e){}
   [["cN","name","name"],["cP","phone","tel"],["cE","email","email"]].forEach(function(f){
-   w.appendChild(el("label",null,T[f[1]]));
+   var lab=el("label",null,T[f[1]]);lab.htmlFor=f[0];w.appendChild(lab);
    var inp=document.createElement("input");
    inp.id=f[0];inp.autocomplete=f[2];
    if(f[0]==="cP"){inp.inputMode="tel";inp.enterKeyHint="next"}
@@ -1020,7 +1076,7 @@ function startHosted(){
  btn.innerHTML='<span class="spin"></span> '+money(state.quote.totalCents);
  var unbusy=function(){btn._busy=false;syncPayBtn()};
  var sentQuote=state.quote; /* a cart edit mid-flight voids this session */
- fetch(API+"/api/hosted-checkout/sessions",{method:"POST",
+ tfetch(API+"/api/hosted-checkout/sessions",{method:"POST",
   headers:{"Content-Type":"application/json","Idempotency-Key":state.idem},
   body:JSON.stringify({quoteId:state.quote.quoteId,menuVersion:state.quote.menuVersion,
    expectedTotalCents:state.quote.totalCents,customer:{name:n,phone:p,email:e}})})
@@ -1031,7 +1087,9 @@ function startHosted(){
       to a checkout priced from the old cart */
    unbusy();state.idem=null;requestQuote(true);return}
   if(res.s===201&&res.j.href){
-   try{localStorage.setItem("lx_customer",JSON.stringify({name:n,phone:p,email:e}))}catch(x){}
+   try{localStorage.setItem("lx_customer",JSON.stringify({name:n,phone:p,email:e}));
+    /* order-status uses this to clear ONLY the paid kitchen's cart + show a summary */
+    localStorage.setItem("lx_pay_slug",state.slug)}catch(x){}
    /* cart is NOT cleared here — order-status clears it on confirmed payment,
       so backing out of Clover keeps the order intact */
    location.href=res.j.href;return}
@@ -1043,7 +1101,7 @@ function startHosted(){
   if(res.j&&res.j.code==="HOSTED_CHECKOUT_NOT_ACTIVE"){
    $("cartErr").textContent=T.notActive;
    state.cfg=null;ckMode=null;fetchCfg();return}
-  $("cartErr").textContent=res.j&&res.j.error||T.netErr;})
+  $("cartErr").textContent=(res.j&&res.j.code==="MENU_UNAVAILABLE")?T.menuFail:T.netErr;})
  .catch(function(){unbusy();$("cartErr").textContent=T.netErr});
 }
 /* bfcache return from Clover: reset the button, key, quote AND the sheet UI —
@@ -1062,13 +1120,18 @@ window.addEventListener("pageshow",function(e){
 });
 
 /* ---- boot ---- */
-applyLang();renderGate();
+function setHdrVar(){var hd=document.querySelector(".hdr");
+ if(hd)document.documentElement.style.setProperty("--hdrh",Math.round(hd.getBoundingClientRect().height)+"px")}
+window.addEventListener("resize",setHdrVar);setHdrVar();
+applyLang();renderGate();setHdrVar();
 var saved=null;try{saved=localStorage.getItem("lx_kitchen")}catch(e){}
-var qk=new URLSearchParams(location.search).get("k");if(qk)saved=qk;
+var qk=new URLSearchParams(location.search).get("k");
+function orderable(slug){for(var i=0;i<KITCHENS.length;i++)if(KITCHENS[i].slug===slug&&KITCHENS[i].api)return KITCHENS[i];return null}
+/* a stale/invalid ?k must not demote a returning customer's saved kitchen */
+if(qk&&orderable(qk))saved=qk;
 /* ?k= is an entry hint, not a pin: drop it so a manual switch survives reload */
 if(qk&&history.replaceState){try{history.replaceState(null,"",location.pathname)}catch(e){}}
-var savedK=null;
-if(saved){for(var i=0;i<KITCHENS.length;i++)if(KITCHENS[i].slug===saved&&KITCHENS[i].api)savedK=KITCHENS[i];}
+var savedK=saved?orderable(saved):null;
 if(savedK){pickKitchen(savedK.slug)}
 else if(navigator.permissions&&navigator.permissions.query){
  navigator.permissions.query({name:"geolocation"}).then(function(st){
