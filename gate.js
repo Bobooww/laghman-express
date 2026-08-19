@@ -26,6 +26,7 @@
       lat: 40.5838, lng: -73.9425,
       zips: ["11235"] },
     { slug: "alpharetta", api: false, region: "ga", name: "Alpharetta, GA",
+      site: "https://www.laghmanexpressga.com/",
       area: { en: "Windward Plaza", ru: "Уиндворд-Плаза", zh: "温德沃德广场" },
       lat: 34.0900, lng: -84.2660,
       zips: ["30005","30004","30022","30009","30076","30097","30024"] }
@@ -174,7 +175,8 @@
     function choose(k) {
       save(k.slug, k.region);
       close();
-      if (k.api) location.href = BASE + "order?k=" + k.slug;
+      if (k.api) { location.href = BASE + "order?k=" + k.slug; return; }
+      if (k.site) { window.open(k.site, "_blank", "noopener"); return; }
       /* non-orderable kitchen: stay on the site, choice remembered */
     }
     function onKey(e) {
@@ -196,7 +198,7 @@
       var w = document.createElement("span");
       var bb = document.createElement("b"); bb.textContent = k.name; w.appendChild(bb);
       var sm = document.createElement("small");
-      sm.textContent = k.area[lang()] + (k.api ? "" : " · " + STR[lang()].phoneOnly);
+      sm.textContent = k.area[lang()] + (k.api ? "" : " · " + (k.site ? "laghmanexpressga.com ↗" : STR[lang()].phoneOnly));
       w.appendChild(sm); b.appendChild(w);
       if (withDist && k._d != null) {
         var d = document.createElement("span"); d.className = "d";
