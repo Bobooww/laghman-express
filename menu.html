@@ -83,10 +83,13 @@ img{max-width:100%;display:block}
 .hero{position:relative;isolation:isolate;padding:clamp(4rem,16vh,8rem) 0 clamp(2.2rem,7vh,3.6rem);
   text-align:left;overflow:hidden}
 .hero-media{position:absolute;inset:0;z-index:-2;display:block}
-.hero-media img{width:100%;height:100%;object-fit:cover;object-position:50% 58%}
+.hero-media img{width:100%;height:100%;object-fit:cover;object-position:50% 58%;
+  filter:saturate(1.06) contrast(1.04)}
+/* the scrim protects the text column and then gets out of the food's way */
 .hero::after{content:"";position:absolute;inset:0;z-index:-1;
-  background:linear-gradient(105deg,var(--ink) 8%,rgba(11,18,14,.86) 42%,rgba(11,18,14,.42) 72%,rgba(11,18,14,.55)),
-             linear-gradient(to top,var(--ink) 2%,transparent 34%)}
+  background:linear-gradient(100deg,rgba(11,18,14,.96) 0%,rgba(11,18,14,.9) 26%,
+             rgba(11,18,14,.58) 46%,rgba(11,18,14,.14) 72%,rgba(11,18,14,.06) 100%),
+             linear-gradient(to top,var(--ink) 0%,rgba(11,18,14,.2) 22%,transparent 42%)}
 .hero h1{font-size:clamp(2.2rem,6.2vw,4rem);max-width:15ch;text-wrap:balance;
   letter-spacing:-.035em;text-shadow:0 2px 30px rgba(3,8,5,.5)}
 .hero .sub{color:rgba(246,241,228,.76);margin:1.1rem 0 1.6rem;max-width:52ch;font-size:1.02rem}
