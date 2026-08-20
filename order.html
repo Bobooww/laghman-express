@@ -200,7 +200,7 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 /* the photo is a rail that fills the row; a dish without one gets the brand
    mark on a quiet tile, so the left edge of the list never breaks rhythm */
 .it .th{flex:0 0 auto;width:84px;align-self:stretch;object-fit:cover;background:#16211a;
-  clip-path:inset(0 100% 0 0);transition:clip-path .55s var(--ease)}
+  clip-path:inset(0 100% 0 0);transition:clip-path .38s var(--ease)}
 .it .noph{flex:0 0 auto;width:84px;align-self:stretch;display:grid;place-items:center;
   background:linear-gradient(150deg,#182420,#111b14)}
 .it .noph img{width:34px;height:28px;opacity:.26}
@@ -1166,16 +1166,18 @@ function hostedActive(){return state.cfg&&state.cfg.paymentsEnabled&&state.cfg.c
 var ckMode=null,cfgFails=0; /* build the form once; rebuilding on every qty tap would wipe typed input */
 function renderCheckout(){
  var w=$("ckWrap");
- if(!state.cart.length){w.innerHTML="";ckMode=null;return}
+ function parkErr(){var e=document.getElementById("cartErr");
+  if(e&&e.parentNode!==w.parentNode)w.parentNode.appendChild(e)}
+ if(!state.cart.length){parkErr();w.innerHTML="";ckMode=null;return}
  if(!state.cfg&&cfgFails<3){ /* still loading — never flash the call-us fallback */
-  if(ckMode!=="wait"){ckMode="wait";w.innerHTML="";
+  if(ckMode!=="wait"){ckMode="wait";parkErr();w.innerHTML="";
    w.appendChild(el("p","muted",T.loading))}
   return}
  var mode=hostedActive()?"pay":"call";
  if(ckMode===mode){syncPayBtn();return}
  /* rebuilding must not lose what the user already typed (e.g. language switch) */
  var typed={};["cN","cP","cE"].forEach(function(id){var n=$(id);if(n)typed[id]=n.value});
- ckMode=mode;w.innerHTML="";
+ ckMode=mode;parkErr();w.innerHTML="";
  var k=kitchen();
  if(mode==="pay"){
   var saved={};try{saved=JSON.parse(localStorage.getItem("lx_customer")||"{}")||{}}catch(e){}
