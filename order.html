@@ -159,6 +159,12 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 .it:active{transform:scale(.99)}
 .it .th{flex:0 0 auto;width:60px;height:60px;border-radius:7px;object-fit:cover;background:#16211a;
   opacity:0;transition:opacity .45s var(--ease)}
+/* narrow phones: give the dish name back the room the photo takes */
+@media(max-width:430px){
+  .it{gap:.65rem;padding:.7rem .75rem}
+  .it .th{width:52px;height:52px}
+  .it .pr{font-size:.9rem}
+}
 .it .th.on{opacity:1}
 .it .nm{flex:1;min-width:0;font-size:.95rem;line-height:1.35}
 .nm .alt{display:block;font-size:.76rem;color:var(--cream60);margin-top:.1rem}
