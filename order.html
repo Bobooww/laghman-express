@@ -44,10 +44,24 @@
   --gold:#e0b25c; --golds:#f0d49a; --goldi:#8a6420; --ember:#e2612b;
   --err:#8a2b12;
   --ease:cubic-bezier(.19,1,.22,1);
+  --sh-1:inset 0 1px 0 rgba(246,241,228,.05),0 2px 6px -2px rgba(3,8,5,.55);
+  --sh-2:inset 0 1px 0 rgba(246,241,228,.09),0 10px 24px -8px rgba(3,8,5,.82);
+  --sh-sheet:0 -2px 10px rgba(3,8,5,.35),0 -26px 70px -14px rgba(3,8,5,.72);
   --display:"Fraunces","Noto Serif SC",Georgia,serif;
   --sans:"Instrument Sans",system-ui,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.ico{flex:0 0 auto;display:block}
+::selection{background:var(--gold);color:#22160a}
+.sheet ::selection{background:var(--pined);color:var(--paper)}
+html{scrollbar-width:thin;scrollbar-color:rgba(224,178,92,.38) var(--ink)}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:var(--ink)}
+::-webkit-scrollbar-thumb{background:rgba(224,178,92,.32);border-radius:100px;
+  border:3px solid var(--ink);background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:rgba(224,178,92,.5);background-clip:padding-box}
+.sheet ::-webkit-scrollbar-track{background:var(--paper)}
+.sheet ::-webkit-scrollbar-thumb{background:rgba(15,36,23,.28);border-color:var(--paper)}
 [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.55;
@@ -62,13 +76,12 @@ a{color:inherit;text-decoration:none}
 button,a,input,label{touch-action:manipulation}
 button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .sheet button:focus-visible,.sheet a:focus-visible,.sheet input:focus-visible{outline-color:var(--goldi)}
-.pr,.tot,#barTot,.qty b,.dist{font-variant-numeric:tabular-nums}
+.pr,.tot,#barTot,.qty b,.dist,.lp,.zip,#modAdd,#payBtn{font-variant-numeric:tabular-nums}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
     transition-duration:.01ms!important}
 }
 .shell{width:min(1100px,92vw);margin-inline:auto}
-.eyebrow{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:600}
 
 .hdr{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:.8rem;
   padding:max(.7rem,env(safe-area-inset-top)) max(4vw,env(safe-area-inset-right)) .7rem max(4vw,env(safe-area-inset-left));
@@ -112,10 +125,12 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .geonote{color:var(--cream60);font-size:.85rem;margin:0 0 1rem}
 .zipw{display:inline-flex;gap:.4rem}
 .zip{width:9ch;border:1px solid rgba(246,241,228,.3);border-radius:100px;padding:.7rem 1rem;background:var(--ink2);color:var(--cream);font:inherit}
+.zip{caret-color:var(--gold)}
 .zip::placeholder{color:var(--cream40)}
 .rgn{margin:1.4rem 0 .6rem;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
 .locs{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-.loc{position:relative;text-align:left;border:1px solid rgba(246,241,228,.16);border-radius:10px;padding:1.1rem 1.1rem 1.2rem;
+.loc{position:relative;text-align:left;border:1px solid rgba(246,241,228,.16);border-radius:11px;padding:1.1rem 1.1rem 1.2rem;
+  box-shadow:var(--sh-1);
   background:var(--ink2);transition:border-color .4s var(--ease),transform .4s var(--ease)}
 @media(hover:hover){
   button.loc:hover,a.loc:hover{border-color:rgba(224,178,92,.5);transform:translateY(-3px)}
@@ -139,9 +154,11 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 #menu{display:none;padding:1.4rem 0 2rem}
 .mhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:.6rem 1rem;margin-bottom:.4rem}
 .mhead h1{font-size:clamp(1.5rem,4.2vw,2.2rem)}
-.mhead .sw{font-size:.8rem;color:var(--cream60);text-decoration:underline;cursor:pointer}
+.mhead .sw{font-size:.8rem;color:var(--cream60);cursor:pointer;text-decoration:underline;
+  text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:rgba(246,241,228,.4)}
 .mnote{color:var(--cream60);font-size:.85rem;margin:.2rem 0 1rem}
-.chips{position:sticky;top:var(--hdrh,52px);z-index:30;display:flex;gap:.5rem;overflow-x:auto;padding:.7rem 0;
+.chips{position:sticky;top:var(--hdrh,52px);z-index:30;display:flex;gap:.5rem;overflow-x:auto;
+  padding:.7rem 4px;margin-inline:-4px;scroll-padding-inline:4px;
   background:linear-gradient(var(--ink) 82%,transparent);scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:0 0 auto;padding:.55rem 1rem;border-radius:100px;border:1px solid rgba(246,241,228,.2);
@@ -154,21 +171,34 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 .cat h2{font-size:1.3rem;color:var(--golds)}
 .cat h2 .alt{display:block;font-size:.72rem;color:var(--cream60);font-family:var(--sans);letter-spacing:0}
 .items{display:grid;gap:.6rem;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));margin-top:.7rem}
-.it{display:flex;align-items:center;gap:.9rem;border:1px solid rgba(246,241,228,.12);border-radius:9px;
-  padding:.8rem .95rem;background:var(--ink2);cursor:pointer;transition:transform .15s var(--ease)}
+.it{display:flex;align-items:stretch;gap:0;border:1px solid rgba(246,241,228,.12);border-radius:10px;
+  box-shadow:var(--sh-1);overflow:hidden;min-height:92px;
+  background:var(--ink2);cursor:pointer;transition:transform .15s var(--ease),border-color .3s var(--ease)}
+.it>.nm,.it>.pr,.it>.add{align-self:center}
+.it .nm{padding:.85rem 0 .85rem .95rem}
+.it .pr{padding-inline:.85rem}
+.it .add{margin-right:.85rem}
 .it:active{transform:scale(.99)}
-.it .th{flex:0 0 auto;width:60px;height:60px;border-radius:7px;object-fit:cover;background:#16211a;
-  opacity:0;transition:opacity .45s var(--ease)}
+/* the photo is a rail that fills the row; a dish without one gets the brand
+   mark on a quiet tile, so the left edge of the list never breaks rhythm */
+.it .th{flex:0 0 auto;width:84px;align-self:stretch;object-fit:cover;background:#16211a;
+  clip-path:inset(0 100% 0 0);transition:clip-path .55s var(--ease)}
+.it .noph{flex:0 0 auto;width:84px;align-self:stretch;display:grid;place-items:center;
+  background:linear-gradient(150deg,#182420,#111b14)}
+.it .noph img{width:34px;height:28px;opacity:.26}
 /* narrow phones: give the dish name back the room the photo takes */
 @media(max-width:430px){
-  .it{gap:.65rem;padding:.7rem .75rem}
-  .it .th{width:52px;height:52px}
-  .it .pr{font-size:.9rem}
+  .it{min-height:84px}
+  .it .th,.it .noph{width:74px}
+  .it .nm{padding:.75rem 0 .75rem .8rem}
+  .it .pr{padding-inline:.7rem;font-size:.9rem}
+  .it .add{margin-right:.7rem}
 }
-.it .th.on{opacity:1}
+.it .th.on{clip-path:inset(0)}
 .it .nm{flex:1;min-width:0;font-size:.95rem;line-height:1.35}
 .nm .alt{display:block;font-size:.76rem;color:var(--cream60);margin-top:.1rem}
-.nm .desc{display:block;font-size:.76rem;color:var(--cream40);margin-top:.15rem;line-height:1.42;font-weight:400}
+.nm .desc{display:block;font-size:.76rem;color:var(--cream40);margin-top:.2rem;line-height:1.42;font-weight:400;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .sheet .desc{color:rgba(15,36,23,.55)}
 .nm .zh-main{font-family:"Noto Serif SC",serif}
 .sheet .nm .alt,.sheet .alt{color:rgba(15,36,23,.72)}
@@ -178,8 +208,6 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 @media(hover:hover){.it .add:hover{background:var(--golds)}}
 .it .add:active{transform:scale(.9)}
 .it .add:disabled{opacity:.6}
-@keyframes okpop{0%{transform:scale(.6)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
-.it .add.ok{animation:okpop .35s var(--ease)}
 .skel{color:var(--cream40);padding:2rem 0;text-align:center}
 .skrow{height:58px;border-radius:9px;margin:.6rem 0;background:linear-gradient(100deg,var(--ink2) 40%,#1a271e 50%,var(--ink2) 60%);
   background-size:200% 100%;animation:shim 1.2s linear infinite}
@@ -190,18 +218,22 @@ button.loc:active,a.loc:active{transform:scale(.99)}
   padding:.8rem max(4vw,env(safe-area-inset-right)) calc(.8rem + env(safe-area-inset-bottom)) max(4vw,env(safe-area-inset-left));
   background:linear-gradient(transparent,rgba(11,18,14,.94) 40%)}
 #bar .btn{width:min(560px,100%);justify-content:space-between}
-@keyframes barpulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
-#bar.pulse .btn{animation:barpulse .45s var(--ease)}
+@keyframes land{0%{transform:scale(.62);opacity:.4}55%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.it .add.ok{animation:land .42s var(--ease)}
+@keyframes receive{0%{transform:translateY(9px);opacity:0;filter:blur(3px)}
+  100%{transform:none;opacity:1;filter:blur(0)}}
+#bar.pulse .btn{animation:receive .5s .12s var(--ease) backwards}
 @keyframes tick{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
 #barTot.tick{animation:tick .25s var(--ease)}
-@keyframes fadeup{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:none}}
-#menu.enter{animation:fadeup .45s var(--ease)}
 .overlay{position:fixed;inset:0;z-index:60;background:rgba(6,10,8,.8);backdrop-filter:blur(6px);
-  opacity:0;pointer-events:none;transition:opacity .3s var(--ease);display:grid;align-items:end;justify-items:center}
-.overlay.open{opacity:1;pointer-events:auto}
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .3s var(--ease),visibility 0s linear .3s;
+  display:grid;align-items:end;justify-items:center}
+.overlay.open{opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
 .sheet{width:100%;max-width:560px;max-height:88vh;max-height:88svh;overflow:auto;overscroll-behavior:contain;
   background:var(--paper);color:var(--pined);
   border-radius:14px 14px 0 0;padding:1.3rem 1.2rem calc(1.6rem + env(safe-area-inset-bottom));
+  box-shadow:var(--sh-sheet);
   transform:translateY(36px);transition:transform .35s var(--ease)}
 .overlay.open .sheet{transform:none}
 @media(min-width:700px){.overlay{align-items:center}.sheet{border-radius:14px}}
@@ -226,8 +258,10 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 .tot{display:grid;gap:.25rem;margin:1rem 0;font-size:.95rem;border-radius:8px;padding:.4rem .2rem}
 .tot div{display:flex;justify-content:space-between}
 .tot .g{font-weight:700;font-size:1.1rem}
-@keyframes totflash{0%{background:#fdf3d8}100%{background:transparent}}
-.tot.flash{animation:totflash 1.4s var(--ease)}
+@keyframes totflash{0%{opacity:1}100%{opacity:0}}
+.tot{position:relative;isolation:isolate}
+.tot.flash::before{content:"";position:absolute;inset:-.35rem -.6rem;border-radius:9px;
+  background:#fdf3d8;z-index:-1;animation:totflash 1.4s var(--ease) forwards}
 .muted{color:rgba(15,36,23,.7);font-size:.8rem}
 .mprice{font-family:var(--sans);font-weight:400;font-size:1rem;color:rgba(15,36,23,.62);white-space:nowrap}
 .sheet .btn-gold{width:100%;margin-top:.6rem}
@@ -236,18 +270,22 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 .modfoot .err{margin-top:0}
 .sheet label{display:block;font-size:.8rem;font-weight:600;margin:.7rem 0 .25rem;color:rgba(15,36,23,.8)}
 .sheet input{width:100%;padding:.7rem .8rem;border:1px solid rgba(15,36,23,.25);border-radius:8px;font:inherit;background:#fff}
-.sheet input.bad{border-color:var(--err)}
+.sheet input{caret-color:var(--goldi)}
+.sheet input.bad{border-color:var(--err);caret-color:var(--err);background:#fffaf8}
 .ferr{display:block;color:var(--err);font-size:.76rem;margin-top:.2rem}
 .err{color:var(--err);font-size:.85rem;margin-top:.6rem;min-height:1.2em}
 .notice{background:#fdf3d8;border:1px solid #e8d5a0;border-radius:8px;padding:.6rem .8rem;font-size:.85rem;margin:.6rem 0}
 .xclose{position:sticky;top:0;float:right;font-size:1.15rem;opacity:.65;padding:.7rem .85rem;margin:-.4rem -.5rem 0 0}
-.grp{margin:.8rem 0;padding-left:.5rem;border-left:3px solid transparent}
-.grp.grp-err{border-left-color:var(--err)}
+.grp{margin:1.4rem 0 .8rem;padding:.5rem .6rem;border-radius:9px;margin-inline:-.6rem;
+  transition:background .3s var(--ease),box-shadow .3s var(--ease)}
+.grp.grp-err{background:rgba(138,43,18,.07);box-shadow:inset 0 0 0 1px rgba(138,43,18,.28)}
 .grp.grp-err h3{color:var(--err)}
 .grp h3{font-size:1.02rem;margin-bottom:.35rem}
 .grp .req{display:inline-block;margin-left:.4rem;font-size:.64rem;padding:.1rem .45rem;border-radius:100px;
   background:rgba(138,43,18,.12);color:var(--err);font-weight:700;vertical-align:middle}
-.grp .m{display:flex;align-items:center;gap:.6rem;padding:.4rem 0;font-size:.92rem}
+.grp .m{display:flex;align-items:center;gap:.65rem;padding:.45rem .35rem;margin-inline:-.35rem;
+  border-radius:7px;font-size:.92rem;cursor:pointer;transition:background .2s var(--ease)}
+.grp .m input{accent-color:var(--pined);width:19px;height:19px;flex:0 0 auto;margin:0;cursor:pointer}
 .grp .m .pr{margin-left:auto;color:var(--goldi);font-weight:600}
 .note-call{border:1px solid rgba(15,36,23,.2);border-radius:10px;padding:.9rem;margin-top:.8rem;font-size:.9rem}
 .reassure{display:flex;gap:.5rem;align-items:flex-start;color:rgba(15,36,23,.7);font-size:.8rem;margin-top:.7rem;line-height:1.45}
@@ -264,16 +302,15 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 </head>
 <body>
 <header class="hdr">
-  <a class="hdr-brand" href="./"><img src="assets/logo-symbol.png" alt=""></a>
+  <a class="hdr-brand" href="./"><img src="assets/logo-mark-cream.svg" alt="" width="30" height="25"></a>
   <b>Laghman Express</b>
   <a class="back" href="./" data-i="back"></a>
-  <button class="kbtn" id="kbtn" hidden><span id="kname"></span> ↺</button>
+  <button class="kbtn" id="kbtn" hidden><span id="kname"></span></button>
   <span class="lang" id="lang"></span>
 </header>
 
 <main>
 <section id="gate" class="shell">
-  <p class="eyebrow" data-i="gateEyebrow">Order pickup</p>
   <h1 data-i="gateH1">Pick your kitchen.</h1>
   <p class="sub" data-i="gateSub">Each kitchen cooks its own menu with its own prices — today's menu comes straight from the kitchen's register. Hand-pulled laghman noodles in Brooklyn (20th Ave, Coney Island Ave) and Alpharetta, GA.</p>
   <div class="gacts">
@@ -301,7 +338,7 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 
 <div class="overlay" id="cartOv" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
   <div class="sheet">
-    <button class="xclose" data-x="cartOv">✕</button>
+    <button class="xclose" data-x="cartOv"></button>
     <h2 id="cartTitle" data-i="yourOrder"></h2>
     <div id="lines"></div>
     <p class="notice" id="cartNotice" aria-live="polite" hidden></p>
@@ -314,7 +351,7 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 
 <div class="overlay" id="modOv" role="dialog" aria-modal="true" aria-labelledby="modName">
   <div class="sheet">
-    <button class="xclose" data-x="modOv">✕</button>
+    <button class="xclose" data-x="modOv"></button>
     <h2 id="modName"></h2>
     <p class="muted" id="modDesc" hidden></p>
     <div id="modGroups"></div>
@@ -328,6 +365,38 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 <script>
 (function(){
 "use strict";
+/* One drawn icon family — 24px grid, 1.75 stroke, round joins. Replaces every
+   emoji and glyph on the surface so the icon voice is consistent. */
+var ICONS={
+ close:"M6.5 6.5l11 11M17.5 6.5l-11 11",
+ swap:"M4.2 8.6h12.4l-3.3-3.3M19.8 15.4H7.4l3.3 3.3",
+ chevron:"M9.8 5.6l6.4 6.4-6.4 6.4",
+ back:"M19 12H5.6M11.2 5.6L4.8 12l6.4 6.4",
+ plus:"M12 5.6v12.8M5.6 12h12.8",
+ minus:"M5.6 12h12.8",
+ check:"M4.8 12.6l5 5L19.4 7",
+ clock:"M12 6.9V12l3.3 1.9M20.2 12a8.2 8.2 0 1 1-16.4 0 8.2 8.2 0 0 1 16.4 0Z",
+ help:"M20.2 12a8.2 8.2 0 1 1-16.4 0 8.2 8.2 0 0 1 16.4 0ZM9.7 9.5a2.4 2.4 0 0 1 4.7.8c0 1.6-2.3 2.1-2.3 3.6M12 17.2v.01",
+ alert:"M20.2 12a8.2 8.2 0 1 1-16.4 0 8.2 8.2 0 0 1 16.4 0ZM12 7.6v5M12 16.2v.01",
+ lock:"M6.3 10.7h11.4a1.8 1.8 0 0 1 1.8 1.8v6.1a1.8 1.8 0 0 1-1.8 1.8H6.3a1.8 1.8 0 0 1-1.8-1.8v-6.1a1.8 1.8 0 0 1 1.8-1.8ZM8.3 10.7V7.9a3.7 3.7 0 0 1 7.4 0v2.8",
+ pin:"M12 20.8s6.4-5.5 6.4-10.1a6.4 6.4 0 1 0-12.8 0c0 4.6 6.4 10.1 6.4 10.1ZM14.3 10.6a2.3 2.3 0 1 1-4.6 0 2.3 2.3 0 0 1 4.6 0Z",
+ phone:"M8.4 4.6l2 3.6-2 1.8a11 11 0 0 0 5.6 5.6l1.8-2 3.6 2v3a1.8 1.8 0 0 1-2 1.8A15.6 15.6 0 0 1 3.6 6.6a1.8 1.8 0 0 1 1.8-2h3Z",
+ crescent:"M16.9 4.5a8.4 8.4 0 1 0 2.8 12.3A7.2 7.2 0 0 1 16.9 4.5Z",
+ award:"M17.3 9.2a5.3 5.3 0 1 1-10.6 0 5.3 5.3 0 0 1 10.6 0ZM8.7 13.5L7.3 20.8l4.7-2.5 4.7 2.5-1.4-7.3"
+};
+function icon(name,size){
+ var NS="http://www.w3.org/2000/svg";
+ var s=document.createElementNS(NS,"svg");
+ s.setAttribute("viewBox","0 0 24 24");
+ s.setAttribute("width",size||20);s.setAttribute("height",size||20);
+ s.setAttribute("fill","none");s.setAttribute("stroke","currentColor");
+ s.setAttribute("stroke-width","1.75");s.setAttribute("stroke-linecap","round");
+ s.setAttribute("stroke-linejoin","round");s.setAttribute("aria-hidden","true");
+ s.setAttribute("class","ico");
+ var p=document.createElementNS(NS,"path");
+ p.setAttribute("d",ICONS[name]||"");s.appendChild(p);
+ return s;
+}
 var API="https://orders-service-production-ab21.up.railway.app";
 /* Four kitchens in two regions. Only API-backed ones are orderable; the rest
    take phone orders until boarded on Clover. Coordinates are used only in the
@@ -352,7 +421,7 @@ var KITCHENS=[
 var REGIONS={ny:{en:"Brooklyn, New York",ru:"Бруклин, Нью-Йорк",zh:"纽约布鲁克林"},
              ga:{en:"Alpharetta, Georgia",ru:"Альфаретта, Джорджия",zh:"佐治亚州阿尔法利塔"}};
 var STR={
- en:{back:"← Back to site",gateEyebrow:"Order pickup",gateH1:"Pick your kitchen.",
+ en:{back:"Back to site",gateH1:"Pick your kitchen.",
   gateSub:"Each kitchen cooks its own menu with its own prices — today’s menu comes straight from the kitchen’s register.",
   nearMe:"Find the nearest kitchen",locating:"Locating…",geoNo:"Location unavailable — pick a kitchen below.",zipPh:"ZIP code",zipGo:"Go",zipNo:"We don’t recognize that ZIP — pick a kitchen below.",
   orderHere:"Order here",phoneOnly:"Phone orders",comingSoon:"Opening soon",nearest:"Nearest kitchen",
@@ -374,7 +443,7 @@ var STR={
   tooMany:"Choose at most {n}",close:"Close",qtyUp:"Add one more",qtyDown:"Remove one",
   closedNow:"The kitchen is closed right now — opens at {t}. You’re welcome to browse the menu meanwhile.",
   langLbl:"Language",docTitle:"Order Pickup — Laghman Express | Brooklyn & Alpharetta"},
- ru:{back:"← На сайт",gateEyebrow:"Заказ на самовывоз",gateH1:"Выберите кухню.",
+ ru:{back:"На сайт",gateH1:"Выберите кухню.",
   gateSub:"У каждой кухни своё меню и свои цены — сегодняшнее меню приходит прямо с кассы.",
   nearMe:"Найти ближайшую кухню",locating:"Определяем…",geoNo:"Геолокация недоступна — выберите кухню ниже.",zipPh:"ZIP-код",zipGo:"ОК",zipNo:"Не узнали этот ZIP — выберите кухню ниже.",
   orderHere:"Заказать здесь",phoneOnly:"Заказ по телефону",comingSoon:"Скоро открытие",nearest:"Ближайшая кухня",
@@ -396,7 +465,7 @@ var STR={
   tooMany:"Не больше {n}",close:"Закрыть",qtyUp:"Добавить ещё",qtyDown:"Убрать одну",
   closedNow:"Кухня сейчас закрыта — откроется в {t}. Меню можно посмотреть уже сейчас.",
   langLbl:"Язык",docTitle:"Заказ на самовывоз — Laghman Express"},
- zh:{back:"← 返回主页",gateEyebrow:"下单自取",gateH1:"选择门店。",
+ zh:{back:"返回主页",gateH1:"选择门店。",
   gateSub:"每家门店都有自己的菜单和价格——今日菜单直接来自门店收银系统。",
   nearMe:"查找最近的门店",locating:"定位中…",geoNo:"无法获取位置——请在下方选择门店。",zipPh:"邮编",zipGo:"确定",zipNo:"无法识别该邮编——请在下方选择门店。",
   orderHere:"在线点餐",phoneOnly:"电话点餐",comingSoon:"即将开业",nearest:"离您最近",
@@ -438,7 +507,15 @@ function photoNode(id,cls,big){
  im.className=cls;im.loading="lazy";im.decoding="async";im.alt="";
  im.width=big?800:120;im.height=big?600:90;
  im.onload=function(){im.classList.add("on")};
- im.onerror=function(){im.remove()};
+ im.onerror=function(){
+  /* no photo for this dish yet — keep the rail with the brand mark */
+  if(cls==="th"){
+   var t=document.createElement("span");t.className="noph";
+   var m=document.createElement("img");m.src="assets/logo-mark-cream.svg";
+   m.alt="";m.width=34;m.height=28;t.appendChild(m);
+   if(im.parentNode)im.parentNode.replaceChild(t,im);
+  }else im.remove();
+ };
  im.src=photoUrl(id,big);
  return im;
 }
@@ -486,7 +563,8 @@ function applyLang(){
  var zi=$("zipIn"),zg=$("zipGo");
  if(zi){zi.placeholder=T.zipPh;zi.setAttribute("aria-label",T.zipPh)}
  if(zg){zg.textContent=T.zipGo}
- document.querySelectorAll(".xclose").forEach(function(b){b.setAttribute("aria-label",T.close)});
+ document.querySelectorAll(".xclose").forEach(function(b){b.setAttribute("aria-label",T.close);
+  if(!b.querySelector(".ico"))b.appendChild(icon("close",18))});
  var hb=document.querySelector(".hdr-brand");
  if(hb)hb.setAttribute("aria-label",T.back.replace("← ",""));
  try{localStorage.setItem("lx_lang",lang)}catch(e){}
@@ -543,7 +621,12 @@ function locCard(k,isNearest){
  node.appendChild(addr);
  node.appendChild(document.createElement("br"));
  if(isNearest)node.appendChild(el("span","near-chip",T.nearest));
- node.appendChild(el("span","tag",k.api?T.orderHere:(k.site?"laghmanexpressga.com ↗":(k.tel?T.phoneOnly+" · "+k.phone:T.comingSoon))));
+ var tag=el("span","tag");
+ if(k.api)tag.textContent=T.orderHere;
+ else if(k.site){tag.appendChild(document.createTextNode("laghmanexpressga.com"));tag.appendChild(icon("chevron",13))}
+ else if(k.tel)tag.textContent=T.phoneOnly+" · "+k.phone;
+ else tag.textContent=T.comingSoon;
+ node.appendChild(tag);
  return node;
 }
 function sortForGate(list){
@@ -564,7 +647,8 @@ function renderGate(){
   if(ri>0&&home){ /* far region collapses to one quiet row */
    var farBtn=el("button","far");farBtn.type="button";
    var farD=userPos?(" · "+distLabel(Math.min.apply(null,list.map(function(k){return k._d})))):"";
-   farBtn.textContent=lbl(T.alsoIn,REGIONS[rg][lang])+farD+" ▸";
+   farBtn.textContent=lbl(T.alsoIn,REGIONS[rg][lang])+farD;
+   farBtn.appendChild(icon("chevron",15));
    var farBox=el("div");farBox.hidden=true;
    farBox.appendChild(el("p","rgn",REGIONS[rg][lang]));
    var grid=el("div","locs");list.forEach(function(k){grid.appendChild(locCard(k,false))});
@@ -659,7 +743,8 @@ function updateHoursNote(){
 function renderMenuChrome(){
  var k=kitchen();if(!k)return;
  $("mTitle").textContent=k.name;
- $("kbtn").hidden=false;$("kname").textContent=k.name;$("kbtn").setAttribute("aria-label",T.switchKitchen+" — "+k.name);
+ $("kbtn").hidden=false;$("kname").textContent=k.name;
+ var ki=$("kbtn").querySelector(".ico");if(!ki)$("kbtn").appendChild(icon("swap",15));$("kbtn").setAttribute("aria-label",T.switchKitchen+" — "+k.name);
  updateHoursNote();
 }
 $("mSwitch").onclick=$("kbtn").onclick=function(){
@@ -732,7 +817,7 @@ function renderMenu(){
    if(it.description)nm.appendChild(el("small","desc",it.description));
    d.appendChild(nm);
    d.appendChild(el("span","pr",money(it.priceCents)));
-   var b=el("button","add","+");b.type="button";
+   var b=el("button","add");b.type="button";b.appendChild(icon("plus",19));
    var an=splitName(it.name);b.setAttribute("aria-label",T.add+" "+((lang==="zh"&&an.zh)?an.zh:(an.latin||an.zh)));
    b.onclick=function(e){e.stopPropagation();tryAdd(it,b)};
    d.onclick=function(){if(!b.disabled)tryAdd(it,b)};
@@ -754,10 +839,11 @@ function renderMenu(){
 /* ---- modifiers ---- */
 var modCtx=null;
 function tryAdd(it,btn){
- if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>'}
- var restore=function(){if(btn){btn.disabled=false;btn.textContent="+";btn.classList.remove("ok")}};
- var flash=function(){if(btn){btn.disabled=false;btn.textContent="✓";btn.classList.add("ok");
-  setTimeout(function(){btn.textContent="+";btn.classList.remove("ok")},600)}};
+ if(btn){btn.disabled=true;btn.innerHTML="";var sp=document.createElement("span");sp.className="spin";btn.appendChild(sp)}
+ var setIcon=function(n){if(!btn)return;btn.innerHTML="";btn.appendChild(icon(n,19))};
+ var restore=function(){if(btn){btn.disabled=false;setIcon("plus");btn.classList.remove("ok")}};
+ var flash=function(){if(btn){btn.disabled=false;setIcon("check");btn.classList.add("ok");
+  setTimeout(function(){setIcon("plus");btn.classList.remove("ok")},700)}};
  var s=state.slug; /* a kitchen switch mid-fetch must never add into the new cart */
  var cached=modCache[it.id];
  var p=cached?Promise.resolve(cached)
@@ -959,11 +1045,11 @@ function renderCart(){
   d.appendChild(nm);
   if(typeof l.unitCents==="number")d.appendChild(el("span","lp",money(l.unitCents*l.quantity)));
   var q=el("span","qty");
-  var minus=el("button",null,"–");minus.type="button";
+  var minus=el("button");minus.type="button";minus.appendChild(icon("minus",17));
   minus.setAttribute("aria-label",T.qtyDown);
   minus.onclick=function(){l.quantity--;if(l.quantity<=0)state.cart.splice(li,1);
    hideStaleNotice();saveCart();renderCart();updateBar();requestQuote()};
-  var plus=el("button",null,"+");plus.type="button";
+  var plus=el("button");plus.type="button";plus.appendChild(icon("plus",17));
   plus.setAttribute("aria-label",T.qtyUp);
   plus.onclick=function(){l.quantity=Math.min(20,l.quantity+1);
    hideStaleNotice();saveCart();renderCart();updateBar();requestQuote()};
@@ -1077,7 +1163,7 @@ function renderCheckout(){
   var btn=el("button","btn btn-gold");btn.id="payBtn";btn.type="button";btn.onclick=startHosted;
   w.appendChild(btn);
   if(k)w.appendChild(el("p","pickup-where",lbl(T.pickupAtLbl,k.name+" · "+k.addr)));
-  var re=el("p","reassure");re.appendChild(el("span",null,"🔒"));
+  var re=el("p","reassure");re.appendChild(icon("lock",17));
   re.appendChild(el("span",null,T.payNote));w.appendChild(re);
   syncPayBtn();
  }else{

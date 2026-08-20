@@ -118,12 +118,13 @@
   }
   function showGate() {
     var T = STR[lang()];
-    var css = "#lxg{position:fixed;inset:0;z-index:99990;background:rgba(6,10,8,.82);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;font-family:'Instrument Sans',system-ui,sans-serif;opacity:0;transition:opacity .3s ease}" +
+    var css = "#lxg{position:fixed;inset:0;z-index:99990;background:rgba(6,10,8,.82);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;font-family:'Instrument Sans',system-ui,sans-serif;opacity:0;transition:opacity .34s cubic-bezier(.19,1,.22,1)}" +
       "#lxg.in{opacity:1}" +
       "@media(min-width:700px){#lxg{align-items:center}}" +
-      "#lxg .p{width:100%;max-width:460px;max-height:88vh;max-height:88svh;overflow:auto;overscroll-behavior:contain;background:#f7f2e6;color:#0f2417;border-radius:16px 16px 0 0;padding:1.4rem 1.3rem calc(1.7rem + env(safe-area-inset-bottom));box-shadow:0 -20px 60px rgba(0,0,0,.4);transform:translateY(36px);transition:transform .35s cubic-bezier(.19,1,.22,1)}" +
+      "#lxg .p{width:100%;max-width:460px;max-height:88vh;max-height:88svh;overflow:auto;overscroll-behavior:contain;background:#f7f2e6;color:#0f2417;border-radius:16px 16px 0 0;padding:1.4rem 1.3rem calc(1.7rem + env(safe-area-inset-bottom));box-shadow:0 -2px 10px rgba(3,8,5,.35),0 -26px 70px -14px rgba(3,8,5,.72);transform:translateY(36px);transition:transform .35s cubic-bezier(.19,1,.22,1)}" +
       "#lxg.in .p{transform:none}" +
       "@media(min-width:700px){#lxg .p{border-radius:16px;padding-bottom:1.7rem}}" +
+      "#lxg ::selection{background:#16301f;color:#f7f2e6}" +
       "#lxg h2{margin:0 0 .3rem;font-family:'Fraunces','Noto Serif SC',Georgia,serif;font-size:1.45rem;letter-spacing:-.01em}" +
       "#lxg .s{margin:0 0 1rem;color:rgba(15,36,23,.65);font-size:.9rem;line-height:1.45}" +
       "#lxg .row{display:flex;gap:.5rem;margin-bottom:.9rem;flex-wrap:wrap}" +
@@ -198,7 +199,17 @@
       var w = document.createElement("span");
       var bb = document.createElement("b"); bb.textContent = k.name; w.appendChild(bb);
       var sm = document.createElement("small");
-      sm.textContent = k.area[lang()] + (k.api ? "" : " · " + (k.site ? "laghmanexpressga.com ↗" : STR[lang()].phoneOnly));
+      sm.textContent = k.area[lang()] + (k.api ? "" : " · " + (k.site ? "laghmanexpressga.com" : STR[lang()].phoneOnly));
+        if (k.site) {
+          var ar = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          ar.setAttribute("viewBox", "0 0 24 24"); ar.setAttribute("width", "12"); ar.setAttribute("height", "12");
+          ar.setAttribute("fill", "none"); ar.setAttribute("stroke", "currentColor");
+          ar.setAttribute("stroke-width", "1.9"); ar.setAttribute("stroke-linecap", "round");
+          ar.setAttribute("stroke-linejoin", "round"); ar.setAttribute("aria-hidden", "true");
+          ar.style.cssText = "display:inline-block;vertical-align:-1px;margin-left:.25rem";
+          var ap = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          ap.setAttribute("d", "M8 16L16 8M9.5 8H16v6.5"); ar.appendChild(ap); sm.appendChild(ar);
+        }
       w.appendChild(sm); b.appendChild(w);
       if (withDist && k._d != null) {
         var d = document.createElement("span"); d.className = "d";

@@ -24,6 +24,7 @@
  --gold:#e0b25c;--golds:#f0d49a;--ember:#e2612b;--ease:cubic-bezier(.19,1,.22,1);
  --display:"Fraunces","Noto Serif SC",Georgia,serif}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+::selection{background:var(--gold);color:#22160a}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--ink);color:var(--cream);font-family:"Instrument Sans",system-ui,sans-serif;
  min-height:100vh;min-height:100svh;display:grid;place-items:center;
@@ -44,7 +45,14 @@ p{color:var(--cream60);margin:.3rem 0;line-height:1.55}
 .spin{display:inline-block;width:28px;height:28px;border:3px solid rgba(246,241,228,.25);
  border-top-color:var(--gold);border-radius:50%;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-.okmark{width:72px;height:72px;display:block;margin:0 auto}
+.okmark,.mark{width:72px;height:72px;display:block;margin:0 auto;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.mark circle{stroke-width:2.4;stroke-dasharray:214;stroke-dashoffset:214;
+  animation:draw .7s var(--ease) forwards}
+.mark path{stroke-width:3;stroke-dasharray:60;stroke-dashoffset:60;
+  animation:draw .45s .4s var(--ease) forwards}
+.mark.fail circle,.mark.fail path{stroke:var(--ember)}
+.mark.wait circle,.mark.wait path{stroke:var(--gold)}
 .okmark circle{stroke:var(--gold);stroke-width:2.4;fill:none;stroke-dasharray:214;stroke-dashoffset:214;
  animation:draw .7s var(--ease) forwards}
 .okmark path{stroke:var(--gold);stroke-width:3.4;fill:none;stroke-linecap:round;stroke-linejoin:round;
@@ -57,13 +65,13 @@ a.btn:active{transform:scale(.97)}
 a.btn-line{display:inline-block;margin:1rem .3rem 0;padding:.75rem 1.3rem;border-radius:100px;
  border:1px solid rgba(246,241,228,.3);color:var(--cream);font-weight:600;text-decoration:none}
 .sum{margin:.9rem auto 0;max-width:320px;text-align:left;font-size:.88rem;color:var(--cream60)}
-.sum div{display:flex;justify-content:space-between;gap:1rem;padding:.15rem 0}
+.sum div{display:flex;justify-content:space-between;gap:1rem;padding:.15rem 0;font-variant-numeric:tabular-nums}
 .ref{margin-top:1rem;font-size:.78rem;color:var(--cream60);word-break:break-all;
  font-variant-numeric:tabular-nums}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;
   animation-iteration-count:1!important;transition-duration:.01ms!important}
- .okmark circle,.okmark path{stroke-dashoffset:0}
+ .okmark circle,.okmark path,.mark circle,.mark path{stroke-dashoffset:0}
 }
 </style>
 </head>
@@ -119,20 +127,25 @@ function callBtn(){
  return '<a class="btn-line" href="tel:'+esc(kitchen.tel)+'">'+esc(T.call)+" · "+esc(kitchen.phone)+"</a>";
 }
 var OK='<svg class="okmark" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="34"/><path d="M22 37.5 32 47 51 27"/></svg>';
-function pop(html){card.innerHTML=html;card.classList.remove("pop");void card.offsetWidth;card.classList.add("pop")}
-function show(icon,h,sub,withRef,withCall){
- pop('<div class="big" aria-hidden="true">'+icon+"</div><h1>"+esc(h)+"</h1><p>"+esc(sub)+"</p>"
+var FAIL='<svg class="mark fail" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="34"/><path d="M26 26l20 20M46 26L26 46"/></svg>';
+var WAIT='<svg class="mark wait" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="34"/><path d="M36 19v18l11 6.5"/></svg>';
+var HELP='<svg class="mark wait" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="34"/><path d="M28.5 28a7.6 7.6 0 0 1 15 2.5c0 5.2-7.4 6.7-7.4 11.6M36 51.5v.1"/></svg>';
+function set(html){card.innerHTML=html}
+function pop(html){set(html);card.classList.remove("pop");void card.offsetWidth;card.classList.add("pop")}
+function show(mark,h,sub,withRef,withCall){
+ pop(mark+"<h1>"+esc(h)+"</h1><p>"+esc(sub)+"</p>"
  +(withCall?callBtn():"")
  +'<br><a class="btn" href="order">'+esc(T.back)+"</a>"+(withRef?refLine():""));
 }
 function showPaid(){
  var lines=payCartLines();
  clearCarts();
- pop(OK+"<h1>"+esc(T.paid)+"</h1><p>"+esc(T.paidSub)+"</p>"
+ card.classList.remove("pop");
+ set(OK+"<h1>"+esc(T.paid)+"</h1><p>"+esc(T.paidSub)+"</p>"
  +summaryHtml(lines)
  +'<a class="btn" href="order">'+esc(T.back)+"</a>"+refLine());
 }
-function showFailed(){show('<span class="fail" style="color:var(--ember)">✕</span>',T.failed,T.failedSub,true,true)}
+function showFailed(){show(FAIL,T.failed,T.failedSub,true,true)}
 function waiting(){card.innerHTML='<div class="spin"></div><h1>'+esc(T.wait)+"</h1><p>"+esc(T.waitSub)+"</p>"}
 /* carts are cleared ONLY here, on confirmed payment — never before redirect.
    Scoped to the kitchen that was paid (lx_pay_slug); a cart being built at the
@@ -176,7 +189,7 @@ function handle(j){
  if(s==="failed"){done=true;showFailed();return true}
  return false;
 }
-if(!token){show("❔",T.noToken,"",false,false)}
+if(!token){show(HELP,T.noToken,"",false,false)}
 else if(failedHint){
  /* the URL param is a hint, not truth — a raced webhook may have succeeded */
  showFailed();
@@ -207,7 +220,7 @@ else{
    if(handle(j))return;
    if(tries<FAST){setTimeout(poll,tries<10?3000:(tries<30?5000:8000))}
    else{
-    if(!slowShown){slowShown=true;show("⏳",T.unknown,T.unknownSub,true,true)}
+    if(!slowShown){slowShown=true;show(WAIT,T.unknown,T.unknownSub,true,true)}
     setTimeout(poll,30000); /* the page promises to keep checking — so keep checking */
    }
   });

@@ -34,10 +34,19 @@
   --cream60:rgba(246,241,228,.62); --cream40:rgba(246,241,228,.4);
   --gold:#e0b25c; --golds:#f0d49a;
   --ease:cubic-bezier(.19,1,.22,1);
+  --sh-1:inset 0 1px 0 rgba(246,241,228,.05),0 2px 6px -2px rgba(3,8,5,.55);
+  --sh-2:inset 0 1px 0 rgba(246,241,228,.09),0 14px 34px -10px rgba(3,8,5,.8);
   --display:"Fraunces","Noto Serif SC","Playfair Display",Georgia,serif;
   --sans:"Instrument Sans",system-ui,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.ico{flex:0 0 auto;display:block}
+::selection{background:var(--gold);color:#22160a}
+html{scrollbar-width:thin;scrollbar-color:rgba(224,178,92,.38) var(--ink)}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:var(--ink)}
+::-webkit-scrollbar-thumb{background:rgba(224,178,92,.32);border-radius:100px;
+  border:3px solid var(--ink);background-clip:padding-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.62}
 h1,h2{font-family:var(--display);font-weight:600;letter-spacing:-.02em;margin:0;line-height:1.05}
@@ -47,7 +56,6 @@ a{color:inherit;text-decoration:none}
 button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 img{max-width:100%;display:block}
 .shell{width:min(880px,92vw);margin-inline:auto}
-.eyebrow{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:600}
 .hdr{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:.8rem;
   padding:max(.7rem,env(safe-area-inset-top)) max(4vw,env(safe-area-inset-right)) .7rem max(4vw,env(safe-area-inset-left));
   background:rgba(11,18,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(224,178,92,.2)}
@@ -55,7 +63,12 @@ img{max-width:100%;display:block}
 .hdr b{font-family:var(--display);font-size:1rem;white-space:nowrap}
 .hdr .back{color:var(--cream60);font-size:.85rem;margin-right:auto}
 .hdr .back:hover{color:var(--cream)}
-@media(max-width:640px){.hdr .back{display:none}.hdr b{margin-right:auto}}
+@media(max-width:640px){
+  .hdr{gap:.55rem;padding-top:.5rem;padding-bottom:.5rem}
+  .hdr .back{display:none}.hdr b{margin-right:auto}
+  .lang button{padding:.42rem .5rem;font-size:.68rem}
+}
+@media(max-width:430px){.hdr b{display:none}.hdr-brand{margin-right:auto}}
 .lang{display:inline-flex;gap:2px;border:1px solid rgba(246,241,228,.28);border-radius:100px;padding:2px}
 .lang button{padding:.45rem .65rem;border-radius:100px;font-size:.72rem;font-weight:700;color:var(--cream60)}
 .lang button.on{background:var(--gold);color:#22160a}
@@ -70,7 +83,8 @@ img{max-width:100%;display:block}
 
 /* the team photo is shown WHOLE — natural aspect, never cropped */
 .team{padding:1.6rem 0 0}
-.team img{width:100%;height:auto;border-radius:12px;border:1px solid rgba(224,178,92,.22)}
+.team img{width:100%;height:auto;border-radius:12px;border:1px solid rgba(224,178,92,.22);
+  box-shadow:var(--sh-2)}
 .team figcaption{color:var(--cream40);font-size:.8rem;margin-top:.6rem;text-align:center}
 
 .story{padding:2rem 0 1rem}
@@ -79,10 +93,13 @@ img{max-width:100%;display:block}
 .story .drop::first-letter{font-family:var(--display);font-size:2.6em;line-height:.9;float:left;
   padding:.08em .12em 0 0;color:var(--gold)}
 :lang(zh-CN) .story .drop::first-letter{font-size:1em;float:none;padding:0;color:inherit}
-.pull{border-left:3px solid var(--gold);padding:.4rem 0 .4rem 1.2rem;margin:1.8rem 0;
-  font-family:var(--display);font-size:1.35rem;line-height:1.4;color:var(--golds)}
-.nyt{display:flex;align-items:center;gap:.8rem;margin:2rem 0;padding:1rem 1.2rem;border:1px solid rgba(224,178,92,.3);
-  border-radius:10px;color:var(--cream);font-size:.95rem;background:var(--ink2)}
+.pull{margin:3rem 0 2.4rem;padding:0;border:0;font-family:var(--display);
+  font-size:clamp(1.4rem,3.6vw,1.95rem);line-height:1.32;letter-spacing:-.028em;
+  color:var(--golds);max-width:24ch;text-wrap:balance}
+.nyt{display:flex;align-items:center;gap:.85rem;margin:2.4rem 0;padding:1.05rem 1.25rem;
+  border:1px solid rgba(224,178,92,.28);border-radius:11px;color:var(--cream);font-size:.95rem;
+  background:var(--ink2);box-shadow:var(--sh-1)}
+.nyt .ico{color:var(--gold)}
 .nyt b{font-family:var(--display)}
 .sig{margin:2.2rem 0 0;font-family:var(--display);font-size:1.2rem;color:var(--golds)}
 .sig small{display:block;font-family:var(--sans);font-size:.8rem;color:var(--cream60);margin-top:.3rem}
@@ -93,15 +110,20 @@ img{max-width:100%;display:block}
   display:flex;flex-wrap:wrap;gap:1rem 2rem;justify-content:space-between;color:var(--cream60);font-size:.85rem}
 .ftr a{text-decoration:underline;text-underline-offset:3px}
 .ftr a:hover{color:var(--cream)}
-@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
-.rv{opacity:0}
-.rv.in{animation:rise .8s var(--ease) forwards}
-@media(prefers-reduced-motion:reduce){.rv{opacity:1}.rv.in{animation:none}}
+/* one authored moment: the kitchen comes into focus, once */
+@keyframes focusIn{from{opacity:0;transform:scale(1.035);filter:blur(14px)}
+  to{opacity:1;transform:none;filter:blur(0)}}
+.team img{opacity:0}
+.team img.in{animation:focusIn 1.1s var(--ease) forwards}
+@media(prefers-reduced-motion:reduce){
+  .team img{opacity:1}.team img.in{animation:none}
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
 </style>
 </head>
 <body>
 <header class="hdr">
-  <a class="hdr-brand" href="./" aria-label="Laghman Express"><img src="assets/logo-symbol.png" alt=""></a>
+  <a class="hdr-brand" href="./" aria-label="Laghman Express"><img src="assets/logo-mark-cream.svg" alt="" width="30" height="25"></a>
   <b>Laghman Express</b>
   <a class="back" href="./" data-i="back"></a>
   <span class="lang" id="lang"></span>
@@ -110,31 +132,37 @@ img{max-width:100%;display:block}
 
 <main>
 <section class="hero shell">
-  <p class="eyebrow" data-i="eyebrow">About Us</p>
   <h1 data-i="h1">A team, a system, and a philosophy.</h1>
   <p class="lede" data-i="lede">Laghman Express is an author-driven gastronomic brand redefining Central Asian cuisine within the contemporary landscape of New York.</p>
 </section>
 
-<figure class="team shell rv">
-  <img src="assets/client-2026-08/about-team-official.png" alt="The Laghman Express team with Brand Chef-Author Gulnoza Jurayeva at the kitchen counter" fetchpriority="high">
+<figure class="team shell">
+  <picture>
+    <source type="image/webp" media="(max-width:700px)" srcset="assets/client-2026-08/about-team-official-900.webp">
+    <source type="image/webp" srcset="assets/client-2026-08/about-team-official.webp">
+    <source media="(max-width:700px)" srcset="assets/client-2026-08/about-team-official-900.jpg">
+    <img src="assets/client-2026-08/about-team-official.jpg" width="1600" height="1069"
+         alt="The Laghman Express team with Brand Chef-Author Gulnoza Jurayeva at the kitchen counter"
+         fetchpriority="high" decoding="async">
+  </picture>
   <figcaption data-i="cap">The Laghman Express team with Brand Chef-Author Gulnoza Jurayeva.</figcaption>
 </figure>
 
 <section class="story shell">
-  <p class="drop rv" data-i="p1">Founded and architected by Brand Chef-Author Gulnoza Jurayeva, the concept represents a refined synthesis of traditional craftsmanship and strategic restaurant design. Under her leadership, the classic laghman has been transformed into a structured culinary system with clearly defined standards, an intentional kitchen architecture, and a scalable operational model.</p>
-  <p class="rv" data-i="p2">At the heart of Laghman Express lies discipline in quality, technical precision, and deep respect for the origin of each recipe. Hand-pulled noodles remain the centerpiece of the kitchen; however, behind this artistry stands a meticulously engineered process that ensures consistency, balance, and visual refinement in every plate.</p>
-  <p class="rv" data-i="p3">A defining strength of the brand is its team of highly trained professionals. Chefs, dough masters, shift managers, and service specialists operate as a synchronized system in which every role carries strategic importance. Under Gulnoza Jurayeva's direction, a culture of internal training, standardization, and continuous improvement has been established, enabling the brand to maintain excellence regardless of service volume.</p>
-  <p class="rv" data-i="p4">While positioned at a premium culinary level, Laghman Express preserves one of its key competitive advantages — speed of service. Through precise coordination and an optimized operational framework, dishes are delivered efficiently without compromising quality or presentation. This balance between craftsmanship and performance distinguishes the brand from traditional restaurant formats.</p>
-  <p class="mut rv" data-i="p5">Gulnoza Jurayeva serves not only as a chef, but as a strategist shaping a new standard for presenting Central Asian cuisine in the United States. Under her leadership, the brand has received institutional recognition and official commendations for its contribution to New York's cultural and entrepreneurial community, reinforcing its status as one of the most structurally developed gastronomic concepts within its niche.</p>
+  <p class="drop" data-i="p1">Founded and architected by Brand Chef-Author Gulnoza Jurayeva, the concept represents a refined synthesis of traditional craftsmanship and strategic restaurant design. Under her leadership, the classic laghman has been transformed into a structured culinary system with clearly defined standards, an intentional kitchen architecture, and a scalable operational model.</p>
+  <p data-i="p2">At the heart of Laghman Express lies discipline in quality, technical precision, and deep respect for the origin of each recipe. Hand-pulled noodles remain the centerpiece of the kitchen; however, behind this artistry stands a meticulously engineered process that ensures consistency, balance, and visual refinement in every plate.</p>
+  <p data-i="p3">A defining strength of the brand is its team of highly trained professionals. Chefs, dough masters, shift managers, and service specialists operate as a synchronized system in which every role carries strategic importance. Under Gulnoza Jurayeva's direction, a culture of internal training, standardization, and continuous improvement has been established, enabling the brand to maintain excellence regardless of service volume.</p>
+  <p data-i="p4">While positioned at a premium culinary level, Laghman Express preserves one of its key competitive advantages — speed of service. Through precise coordination and an optimized operational framework, dishes are delivered efficiently without compromising quality or presentation. This balance between craftsmanship and performance distinguishes the brand from traditional restaurant formats.</p>
+  <p class="mut" data-i="p5">Gulnoza Jurayeva serves not only as a chef, but as a strategist shaping a new standard for presenting Central Asian cuisine in the United States. Under her leadership, the brand has received institutional recognition and official commendations for its contribution to New York's cultural and entrepreneurial community, reinforcing its status as one of the most structurally developed gastronomic concepts within its niche.</p>
 
-  <div class="nyt rv">🏆 <span data-i="nyt">The New York Times — 100 Best Restaurants in NYC: 2024, 2025 &amp; 2026.</span></div>
+  <div class="nyt"><span data-i="nyt">The New York Times — 100 Best Restaurants in NYC: 2024, 2025 &amp; 2026.</span></div>
 
-  <blockquote class="pull rv" data-i="pull">Today, Laghman Express is more than a restaurant. It is a team, a system, and a philosophy operating in absolute harmony.</blockquote>
-  <p class="sig rv"><span data-i="sig1">We do not simply serve food quickly.</span><br><span data-i="sig2">We serve culture with precision and dignity.</span>
+  <blockquote class="pull" data-i="pull">Today, Laghman Express is more than a restaurant. It is a team, a system, and a philosophy operating in absolute harmony.</blockquote>
+  <p class="sig"><span data-i="sig1">We do not simply serve food quickly.</span><br><span data-i="sig2">We serve culture with precision and dignity.</span>
    <small data-i="sig3">— Laghman Express, New York</small></p>
 </section>
 
-<section class="cta shell rv">
+<section class="cta shell">
   <p data-i="ctaP">Taste what the system is built for.</p>
   <a class="btn" href="order" data-i="ctaBtn">Order pickup</a>
 </section>
@@ -153,9 +181,41 @@ img{max-width:100%;display:block}
 <script>
 (function(){
 "use strict";
+/* One drawn icon family — 24px grid, 1.75 stroke, round joins. Replaces every
+   emoji and glyph on the surface so the icon voice is consistent. */
+var ICONS={
+ close:"M6.5 6.5l11 11M17.5 6.5l-11 11",
+ swap:"M4.2 8.6h12.4l-3.3-3.3M19.8 15.4H7.4l3.3 3.3",
+ chevron:"M9.8 5.6l6.4 6.4-6.4 6.4",
+ back:"M19 12H5.6M11.2 5.6L4.8 12l6.4 6.4",
+ plus:"M12 5.6v12.8M5.6 12h12.8",
+ minus:"M5.6 12h12.8",
+ check:"M4.8 12.6l5 5L19.4 7",
+ clock:"M12 6.9V12l3.3 1.9M20.2 12a8.2 8.2 0 1 1-16.4 0 8.2 8.2 0 0 1 16.4 0Z",
+ help:"M20.2 12a8.2 8.2 0 1 1-16.4 0 8.2 8.2 0 0 1 16.4 0ZM9.7 9.5a2.4 2.4 0 0 1 4.7.8c0 1.6-2.3 2.1-2.3 3.6M12 17.2v.01",
+ alert:"M20.2 12a8.2 8.2 0 1 1-16.4 0 8.2 8.2 0 0 1 16.4 0ZM12 7.6v5M12 16.2v.01",
+ lock:"M6.3 10.7h11.4a1.8 1.8 0 0 1 1.8 1.8v6.1a1.8 1.8 0 0 1-1.8 1.8H6.3a1.8 1.8 0 0 1-1.8-1.8v-6.1a1.8 1.8 0 0 1 1.8-1.8ZM8.3 10.7V7.9a3.7 3.7 0 0 1 7.4 0v2.8",
+ pin:"M12 20.8s6.4-5.5 6.4-10.1a6.4 6.4 0 1 0-12.8 0c0 4.6 6.4 10.1 6.4 10.1ZM14.3 10.6a2.3 2.3 0 1 1-4.6 0 2.3 2.3 0 0 1 4.6 0Z",
+ phone:"M8.4 4.6l2 3.6-2 1.8a11 11 0 0 0 5.6 5.6l1.8-2 3.6 2v3a1.8 1.8 0 0 1-2 1.8A15.6 15.6 0 0 1 3.6 6.6a1.8 1.8 0 0 1 1.8-2h3Z",
+ crescent:"M16.9 4.5a8.4 8.4 0 1 0 2.8 12.3A7.2 7.2 0 0 1 16.9 4.5Z",
+ award:"M17.3 9.2a5.3 5.3 0 1 1-10.6 0 5.3 5.3 0 0 1 10.6 0ZM8.7 13.5L7.3 20.8l4.7-2.5 4.7 2.5-1.4-7.3"
+};
+function icon(name,size){
+ var NS="http://www.w3.org/2000/svg";
+ var s=document.createElementNS(NS,"svg");
+ s.setAttribute("viewBox","0 0 24 24");
+ s.setAttribute("width",size||20);s.setAttribute("height",size||20);
+ s.setAttribute("fill","none");s.setAttribute("stroke","currentColor");
+ s.setAttribute("stroke-width","1.75");s.setAttribute("stroke-linecap","round");
+ s.setAttribute("stroke-linejoin","round");s.setAttribute("aria-hidden","true");
+ s.setAttribute("class","ico");
+ var p=document.createElementNS(NS,"path");
+ p.setAttribute("d",ICONS[name]||"");s.appendChild(p);
+ return s;
+}
 var STR={
  en:{docTitle:"About Us — Laghman Express",back:"← Back to site",order:"Order",
-  eyebrow:"About Us",h1:"A team, a system, and a philosophy.",
+  h1:"A team, a system, and a philosophy.",
   lede:"Laghman Express is an author-driven gastronomic brand redefining Central Asian cuisine within the contemporary landscape of New York.",
   cap:"The Laghman Express team with Brand Chef-Author Gulnoza Jurayeva.",
   p1:"Founded and architected by Brand Chef-Author Gulnoza Jurayeva, the concept represents a refined synthesis of traditional craftsmanship and strategic restaurant design. Under her leadership, the classic laghman has been transformed into a structured culinary system with clearly defined standards, an intentional kitchen architecture, and a scalable operational model.",
@@ -169,7 +229,7 @@ var STR={
   ctaP:"Taste what the system is built for.",ctaBtn:"Order pickup",
   fHome:"Home",fMenu:"Menu",fCraft:"Our Craft",fOrder:"Order"},
  ru:{docTitle:"О нас — Laghman Express",back:"← На сайт",order:"Заказать",
-  eyebrow:"О нас",h1:"Команда, система и философия.",
+  h1:"Команда, система и философия.",
   lede:"Laghman Express — авторский гастрономический бренд, который заново определяет центральноазиатскую кухню в современном Нью-Йорке.",
   cap:"Команда Laghman Express с бренд-шефом и автором концепции Гульнозой Джураевой.",
   p1:"Концепцию основала и выстроила бренд-шеф и автор Гульноза Джураева: это точный синтез традиционного ремесла и продуманной ресторанной архитектуры. Под её руководством классический лагман превратился в выстроенную кулинарную систему — с ясными стандартами, осознанной организацией кухни и масштабируемой операционной моделью.",
@@ -183,7 +243,7 @@ var STR={
   ctaP:"Попробуйте то, ради чего построена эта система.",ctaBtn:"Заказать самовывоз",
   fHome:"Главная",fMenu:"Меню",fCraft:"Наше ремесло",fOrder:"Заказ"},
  zh:{docTitle:"关于我们 — Laghman Express",back:"← 返回主页",order:"点餐",
-  eyebrow:"关于我们",h1:"一支团队、一套体系、一种理念。",
+  h1:"一支团队、一套体系、一种理念。",
   lede:"Laghman Express 是一个主厨主导的美食品牌，正在纽约当代餐饮版图中重新定义中亚菜。",
   cap:"Laghman Express 团队与品牌主厨·创始人 Gulnoza Jurayeva。",
   p1:"品牌由主厨·创始人 Gulnoza Jurayeva 创立并亲自构建：将传统手艺与体系化的餐厅设计精准融合。在她的带领下，经典拉面被打造成一套结构化的烹饪体系——标准清晰、厨房架构合理、运营模式可复制。",
@@ -214,17 +274,17 @@ function applyLang(){
   b.onclick=function(){lang=p[0];applyLang()};
   lb.appendChild(b);});
 }
+var nyt=document.querySelector(".nyt");
+if(nyt&&!nyt.querySelector(".ico"))nyt.insertBefore(icon("award",22),nyt.firstChild);
 applyLang();
-if("IntersectionObserver" in window){
- var io=new IntersectionObserver(function(en){
-  en.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}});
- },{rootMargin:"0px 0px -8% 0px"});
- document.querySelectorAll(".rv").forEach(function(n){io.observe(n)});
-}else{
- document.querySelectorAll(".rv").forEach(function(n){n.classList.add("in")});
+var teamImg=document.querySelector(".team img");
+if(teamImg){
+ var show=function(){teamImg.classList.add("in")};
+ if(teamImg.complete)show();else teamImg.addEventListener("load",show);
+ teamImg.addEventListener("error",show);
 }
 })();
 </script>
-<noscript><style>.rv{opacity:1}</style></noscript>
+<noscript><style>.team img{opacity:1}</style></noscript>
 </body>
 </html>
