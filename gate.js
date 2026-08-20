@@ -135,11 +135,15 @@
       "#lxg .zip{flex:1;min-width:0;border:1px solid rgba(15,36,23,.3);border-radius:100px;padding:.65rem .9rem;background:#fff}" +
       "#lxg .zgo{border:1px solid rgba(15,36,23,.3);background:none;border-radius:100px;padding:.65rem 1rem;cursor:pointer;font-weight:600}" +
       "#lxg .k{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:#fff;border:1px solid rgba(15,36,23,.18);border-radius:10px;padding:.85rem .9rem;margin:.4rem 0;cursor:pointer}" +
+      "#lxg .k{transition:border-color .3s cubic-bezier(.19,1,.22,1),box-shadow .3s cubic-bezier(.19,1,.22,1),transform .2s cubic-bezier(.19,1,.22,1)}" +
+      "@media(hover:hover){#lxg .k:hover{border-color:rgba(138,100,32,.5);box-shadow:0 8px 22px -14px rgba(15,36,23,.5)}}" +
+      "#lxg .k:active{transform:scale(.99)}" +
+      "#lxg .zip{caret-color:#8a6420}#lxg .zip::placeholder{color:rgba(15,36,23,.55)}" +
       "#lxg .k b{display:block;font-size:.98rem}" +
       "#lxg .k small{color:rgba(15,36,23,.7)}" +
       "#lxg .k .d{color:#8a6420;font-weight:600;font-size:.85rem;white-space:nowrap;margin-left:.6rem;font-variant-numeric:tabular-nums}" +
       "#lxg .err{color:#8a2b12;font-size:.82rem;min-height:1.1em;margin:.2rem 0 0}" +
-      "#lxg .skip{display:block;margin:.7rem auto 0;background:none;border:0;color:rgba(15,36,23,.6);text-decoration:underline;cursor:pointer;font-size:.85rem;padding:.4rem .8rem}" +
+      "#lxg .skip{display:block;margin:.7rem auto 0;background:none;border:0;color:rgba(15,36,23,.72);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:.85rem;padding:.4rem .8rem}" +
       "@media(prefers-reduced-motion:reduce){#lxg,#lxg .p{transition:none}}";
     var st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
     var ov = document.createElement("div"); ov.id = "lxg";
@@ -268,7 +272,11 @@
     setTimeout(rewrite, 1500); /* late client re-renders */
     var skipped = false;
     try { skipped = sessionStorage.getItem("lx_gate_skip") === "1"; } catch (e) {}
-    if (!savedKitchen() && !skipped) setTimeout(showGate, 600);
+    if (!savedKitchen() && !skipped) setTimeout(function () {
+    /* if they already started reading, let them read — the gate can wait for a click */
+    if ((window.scrollY || 0) > 40) { try { sessionStorage.setItem("lx_gate_skip", "1"); } catch (e) {} return; }
+    showGate();
+  }, 240);
   }
   if (document.readyState === "complete") setTimeout(boot, 300);
   else window.addEventListener("load", function () { setTimeout(boot, 300); });
