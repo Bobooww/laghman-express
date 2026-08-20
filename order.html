@@ -203,6 +203,8 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 .mhero{width:calc(100% + 2.4rem);margin:-1.3rem -1.2rem .9rem;display:block;aspect-ratio:4/3;
   object-fit:cover;background:var(--paper2);opacity:0;transition:opacity .5s var(--ease)}
 .mhero.on{opacity:1}
+/* the close button sits over the photo — keep it legible on any image */
+#modOv .xclose{background:rgba(247,242,230,.92);border-radius:50%;line-height:1;opacity:.9;z-index:3}
 .line .th{flex:0 0 auto;width:42px;height:42px;border-radius:6px;object-fit:cover;background:var(--paper2);
   opacity:0;transition:opacity .4s var(--ease)}
 .line .th.on{opacity:1}
