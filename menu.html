@@ -94,6 +94,43 @@ img{max-width:100%;display:block}
 .dishes li.hot{border-color:rgba(226,97,43,.5)}
 .where{font-size:.76rem;color:var(--cream40);margin-top:.8rem;letter-spacing:.04em}
 
+/* live photo menu */
+.livemenu{padding:1.4rem 0 2rem;border-top:1px solid rgba(224,178,92,.14)}
+.ktabs{display:flex;gap:.5rem;flex-wrap:wrap;margin:1.2rem 0 .5rem}
+.ktabs button{padding:.5rem 1rem;border-radius:100px;border:1px solid rgba(246,241,228,.22);
+  font-size:.85rem;color:var(--cream60);transition:background .3s var(--ease),color .3s var(--ease)}
+.ktabs button.on{background:var(--paper);color:var(--pined);border-color:var(--paper);font-weight:600}
+.mnote{color:var(--cream40);font-size:.82rem;margin:.2rem 0 .8rem}
+.chips{position:sticky;top:60px;z-index:20;display:flex;gap:.5rem;overflow-x:auto;padding:.7rem 0;
+  background:linear-gradient(var(--ink) 82%,transparent);scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:.5rem 1rem;border-radius:100px;border:1px solid rgba(246,241,228,.2);
+  font-size:.85rem;color:var(--cream60);white-space:nowrap}
+.chip.on{background:var(--paper);color:var(--pined);border-color:var(--paper);font-weight:600}
+.cat{margin:1.8rem 0 .4rem;scroll-margin-top:130px}
+.cat h2{font-size:1.35rem;color:var(--golds)}
+.cards{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));margin-top:.9rem}
+.card{border:1px solid rgba(246,241,228,.12);border-radius:11px;overflow:hidden;background:var(--ink2);
+  transition:transform .5s var(--ease),border-color .4s var(--ease)}
+@media(hover:hover){.card:hover{transform:translateY(-3px);border-color:rgba(224,178,92,.45)}}
+.card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#16211a;opacity:0;transition:opacity .5s var(--ease)}
+.card img.on{opacity:1}
+.card.nophoto{background:linear-gradient(160deg,#141f18,var(--ink2));border-style:dashed}
+.card.nophoto .b{padding:1.1rem .95rem}
+.card .b{padding:.75rem .85rem .9rem}
+.card .n{font-size:.94rem;line-height:1.34}
+.card .n .alt{display:block;font-size:.75rem;color:var(--cream60);margin-top:.12rem}
+.card .n .zh-main{font-family:"Noto Serif SC",serif}
+.card .d{font-size:.78rem;color:var(--cream40);margin-top:.3rem;line-height:1.42}
+.card .p{margin-top:.5rem;color:var(--golds);font-weight:600;font-variant-numeric:tabular-nums}
+.more{display:flex;flex-wrap:wrap;gap:.45rem;margin:.9rem 0 0;padding:0;list-style:none}
+.more li{font-size:.83rem;padding:.4rem .85rem;border-radius:100px;border:1px solid rgba(246,241,228,.16);color:var(--cream60)}
+.more li .p{color:var(--golds);margin-left:.4rem;font-weight:600}
+.skel{color:var(--cream40);padding:2rem 0;text-align:center}
+.skrow{height:180px;border-radius:11px;margin:.6rem 0;background:linear-gradient(100deg,var(--ink2) 40%,#1a271e 50%,var(--ink2) 60%);
+  background-size:200% 100%;animation:shim 1.2s linear infinite}
+@keyframes shim{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){.skrow{animation:none}}
 .cta{padding:3rem 0 4rem;text-align:center;border-top:1px solid rgba(224,178,92,.14)}
 .cta h2{font-size:clamp(1.6rem,4.5vw,2.4rem)}
 .cta p{color:var(--cream60);margin:.8rem auto 1.4rem;max-width:46ch}
@@ -127,120 +164,11 @@ img{max-width:100%;display:block}
   <p class="note" data-i="note">Live prices and today's availability are on the order page — each kitchen cooks its own menu from its own register.</p>
 </section>
 
-<section class="sec shell rv">
-  <div class="grid">
-    <div class="ph"><img src="assets/client-2026-08/guyurou-laghman-1.jpg" alt="Guyurou laghman — hand-pulled noodles with beef" loading="lazy">
-      <span class="tile"><img src="assets/categories/noodle.png" alt=""></span></div>
-    <div>
-      <h2 data-i="s1h">Laghman Noodles</h2>
-      <p class="desc" data-i="s1d">The signature. Dough is pulled, folded and slapped against the table, then goes straight to the wok or the broth. Chewy, glossy, alive — the noodle you hear before you taste.</p>
-      <ul class="dishes">
-        <li data-i="s1i1">Guyurou Laghman</li>
-        <li data-i="s1i2">Dry-Fried Laghman</li>
-        <li class="hot" data-i="s1i3">Chezyru Laghman</li>
-        <li data-i="s1i4">Boso Laghman</li>
-        <li data-i="s1i5">Vegetable Laghman</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="sec shell rv">
-  <div class="grid">
-    <div class="ph"><img src="assets/client-2026-08/dapanji.jpg" alt="Big Plate Chicken — dapanji over noodles" loading="lazy">
-      <span class="tile"><img src="assets/categories/main-dish.png" alt=""></span></div>
-    <div>
-      <h2 data-i="s2h">Big Plate Chicken — Dapanji</h2>
-      <p class="desc" data-i="s2d">A mountain of a dish: chicken braised with potatoes and peppers in a deep, warming sauce, served over wide hand-pulled noodles. Made to be shared — or heroically not.</p>
-      <ul class="dishes">
-        <li data-i="s2i1">Dapanji Large — feeds 3–4</li>
-        <li data-i="s2i2">Dapanji Medium</li>
-        <li class="hot" data-i="s2i3">Spicy 辣</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="sec shell rv">
-  <div class="grid">
-    <div class="ph"><img src="assets/client-2026-08/central-asian-manty-1.jpg" alt="Hand-pleated steamed manty" loading="lazy">
-      <span class="tile"><img src="assets/categories/dumplings-manty-wontons.png" alt=""></span></div>
-    <div>
-      <h2 data-i="s3h">Manty, Dumplings &amp; Wontons</h2>
-      <p class="desc" data-i="s3d">Hand-pleated and steamed to order: juicy beef manty, delicate wontons in broth, pan-seared dumplings. The quiet masters of the menu.</p>
-      <ul class="dishes">
-        <li data-i="s3i1">Steamed Manty</li>
-        <li data-i="s3i2">Wontons in Broth</li>
-        <li data-i="s3i3">Fried Dumplings</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="sec shell rv">
-  <div class="grid">
-    <div class="ph"><img src="assets/client-2026-08/soup-of-the-day.jpg" alt="Soup of the day with hand-pulled noodles" loading="lazy">
-      <span class="tile"><img src="assets/categories/soup.png" alt=""></span></div>
-    <div>
-      <h2 data-i="s4h">Soups</h2>
-      <p class="desc" data-i="s4d">Slow broths that taste like someone's home: laghman soup with pulled noodles, shurpa with tender lamb, and the soup of the day from the pot that's been working since morning.</p>
-      <ul class="dishes">
-        <li data-i="s4i1">Laghman Soup</li>
-        <li data-i="s4i2">Shurpa</li>
-        <li data-i="s4i3">Soup of the Day</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="sec shell rv">
-  <div class="grid">
-    <div class="ph"><img src="assets/gallery/gallery-01-cumin-lamb.jpg" alt="Cumin lamb with peppers" loading="lazy">
-      <span class="tile"><img src="assets/categories/hot-appetizers.png" alt=""></span></div>
-    <div>
-      <h2 data-i="s5h">Mains &amp; Hot Appetizers</h2>
-      <p class="desc" data-i="s5d">Wok fire and cumin smoke: lamb seared with peppers, kuurdak with fried potatoes, beshbarmak, crackling samsa and golden fried chicken — the loud side of the kitchen.</p>
-      <ul class="dishes">
-        <li class="hot" data-i="s5i1">Cumin Lamb</li>
-        <li data-i="s5i2">Kuurdak</li>
-        <li data-i="s5i3">Beshbarmak</li>
-        <li data-i="s5i4">Samsa</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="sec shell rv">
-  <div class="grid">
-    <div class="ph"><img src="assets/client-2026-08/dry-fried-noodles.jpg" alt="Salads and cold appetizers" loading="lazy">
-      <span class="tile"><img src="assets/categories/salads-cold-appetizers.png" alt=""></span></div>
-    <div>
-      <h2 data-i="s6h">Salads &amp; Cold Appetizers</h2>
-      <p class="desc" data-i="s6d">The bright counterpoint: chilled spicy noodles, smashed cucumbers, funchoza, pickled vegetables — everything the hot dishes are better next to.</p>
-      <ul class="dishes">
-        <li data-i="s6i1">Cold Spicy Noodles</li>
-        <li data-i="s6i2">Funchoza</li>
-        <li data-i="s6i3">Smashed Cucumber Salad</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="sec shell rv">
-  <div class="grid">
-    <div class="ph"><img src="assets/client-2026-08/tea.jpg" alt="Signature teas in glass pots" loading="lazy">
-      <span class="tile"><img src="assets/categories/side-dish.png" alt=""></span></div>
-    <div>
-      <h2 data-i="s7h">Sushi, Desserts &amp; Teas</h2>
-      <p class="desc" data-i="s7d">Coney Island Ave and Emmons Ave add a full sushi bar — fresh rolls, sashimi and sets — plus house desserts, milkshakes and signature teas brewed in glass pots with citrus and spice.</p>
-      <ul class="dishes">
-        <li data-i="s7i1">Sushi &amp; Rolls</li>
-        <li data-i="s7i2">Medovik &amp; Desserts</li>
-        <li data-i="s7i3">Signature Teas</li>
-      </ul>
-      <p class="where" data-i="s7w">SUSHI BAR: CONEY ISLAND AVE · EMMONS AVE</p>
-    </div>
-  </div>
+<section class="livemenu shell">
+  <div class="ktabs" id="ktabs" role="tablist" aria-label="Kitchen"></div>
+  <p class="mnote" id="mnote"></p>
+  <div class="chips" id="chips"></div>
+  <div id="cats"></div>
 </section>
 
 <section class="cta shell rv">
@@ -284,7 +212,10 @@ var STR={
   s7h:"Sushi, Desserts & Teas",s7d:"Coney Island Ave and Emmons Ave add a full sushi bar — fresh rolls, sashimi and sets — plus house desserts, milkshakes and signature teas brewed in glass pots with citrus and spice.",
   s7i1:"Sushi & Rolls",s7i2:"Medovik & Desserts",s7i3:"Signature Teas",s7w:"SUSHI BAR: CONEY ISLAND AVE · EMMONS AVE",
   ctaH:"Hungry already?",ctaP:"Pick your kitchen and see today's full menu with live prices — straight from the register. Pay online, pick up at the counter.",ctaBtn:"Order pickup",
-  fHome:"Home",fAbout:"About Us",fCraft:"Our Craft",fOrder:"Order"},
+  fHome:"Home",fAbout:"About Us",fCraft:"Our Craft",fOrder:"Order",
+  liveNote:"Live menu from this kitchen's register — dishes and prices as they are today. Photos are the kitchen's own.",
+  loading:"Loading the menu…",menuFail:"The menu is taking a break.",retry:"Try again",alsoHere:"Also on the menu",
+  kitchenLbl:"Kitchen"},
  ru:{docTitle:"Меню — Laghman Express",back:"← На сайт",order:"Заказать",
   eyebrow:"Меню",h1:"Одно тесто. Целый стол.",
   sub:"Сердце кухни — лагман ручной вытяжки: тесто тянут под заказ, никогда заранее. Вокруг него — сочные манты, хрустящая самса, медленные супы и горячее из вока. Всё меню — халяль.",
@@ -305,7 +236,10 @@ var STR={
   s7h:"Суши, десерты и чаи",s7d:"На Coney Island Ave и Emmons Ave работает полноценный суши-бар — свежие роллы, сашими и сеты, а ещё домашние десерты, милкшейки и фирменные чаи в стеклянных чайниках с цитрусом и специями.",
   s7i1:"Суши и роллы",s7i2:"Медовик и десерты",s7i3:"Фирменные чаи",s7w:"СУШИ-БАР: CONEY ISLAND AVE · EMMONS AVE",
   ctaH:"Уже проголодались?",ctaP:"Выберите кухню — и увидите полное сегодняшнее меню с живыми ценами прямо с кассы. Оплата онлайн, самовывоз у стойки.",ctaBtn:"Заказать самовывоз",
-  fHome:"Главная",fAbout:"О нас",fCraft:"Наше ремесло",fOrder:"Заказ"},
+  fHome:"Главная",fAbout:"О нас",fCraft:"Наше ремесло",fOrder:"Заказ",
+  liveNote:"Живое меню с кассы этой кухни — блюда и цены как сегодня. Фото — их собственные.",
+  loading:"Загружаем меню…",menuFail:"Меню отдыхает.",retry:"Попробовать ещё раз",alsoHere:"Ещё в меню",
+  kitchenLbl:"Кухня"},
  zh:{docTitle:"菜单 — Laghman Express",back:"← 返回主页",order:"点餐",
   eyebrow:"菜单",h1:"一团面，一整桌。",
   sub:"手工拉面是这间厨房的心脏——现点现拉，绝不提前。围绕它的还有多汁的蒸包、酥脆的烤包子、慢火好汤和锅气十足的热菜。全部清真。",
@@ -326,7 +260,10 @@ var STR={
   s7h:"寿司、甜品与茶饮",s7d:"Coney Island Ave 与 Emmons Ave 门店设有完整寿司吧——新鲜卷物、刺身与套餐，还有自制甜品、奶昔以及玻璃壶冲泡、带柑橘与香料的招牌茶。",
   s7i1:"寿司与卷物",s7i2:"蜂蜜蛋糕与甜品",s7i3:"招牌茶饮",s7w:"寿司吧：CONEY ISLAND AVE · EMMONS AVE",
   ctaH:"已经饿了吗？",ctaP:"选择门店，即可查看今日完整菜单与实时价格——直接来自收银系统。在线支付，柜台自取。",ctaBtn:"在线点餐 · 自取",
-  fHome:"主页",fAbout:"关于我们",fCraft:"我们的手艺",fOrder:"点餐"}
+  fHome:"主页",fAbout:"关于我们",fCraft:"我们的手艺",fOrder:"点餐",
+  liveNote:"实时菜单，直接来自该门店收银系统——菜品与价格均为今日实况。照片由门店提供。",
+  loading:"菜单加载中…",menuFail:"菜单开小差了。",retry:"再试一次",alsoHere:"更多菜品",
+  kitchenLbl:"门店"}
 };
 var lang=(function(){try{var s=localStorage.getItem("lx_lang");if(s==="ru"||s==="zh"||s==="en")return s;}catch(e){}
  var n=(navigator.language||"").toLowerCase();return n.indexOf("ru")===0?"ru":n.indexOf("zh")===0?"zh":"en";})();
@@ -341,9 +278,121 @@ function applyLang(){
  [["en","EN"],["ru","RU"],["zh","中文"]].forEach(function(p){
   var b=document.createElement("button");b.type="button";b.textContent=p[1];
   if(p[0]===lang)b.className="on";
-  b.onclick=function(){lang=p[0];applyLang()};
+  b.onclick=function(){lang=p[0];applyLang();if(menuData){renderTabs();renderMenu()}};
   lb.appendChild(b);});
 }
+
+/* ---------- live photo menu ---------- */
+var API="https://orders-service-production-ab21.up.railway.app";
+var KITCHENS=[
+ {slug:"20th-ave",name:"20th Ave",area:{en:"Bensonhurst",ru:"Бенсонхёрст",zh:"本森赫斯特"}},
+ {slug:"coney-island",name:"Coney Island Ave",area:{en:"Gravesend",ru:"Грейвсенд",zh:"格雷夫森德"}},
+ {slug:"emmons-ave",name:"Emmons Ave",area:{en:"Sheepshead Bay",ru:"Шипсхед-Бэй",zh:"羊头湾"}}
+];
+var slug=(function(){try{var s=localStorage.getItem("lx_kitchen");
+ for(var i=0;i<KITCHENS.length;i++)if(KITCHENS[i].slug===s)return s}catch(e){}
+ return "20th-ave"})();
+var menuData=null,chipObs=null;
+function $(id){return document.getElementById(id)}
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function money(c){return "$"+(c/100).toFixed(2)}
+var CJK=/[　-〿㐀-䶿一-鿿＀-￯]+/g;
+function splitName(s){
+ var zh=(s.match(CJK)||[]).join(" ").replace(/\s+/g," ").trim();
+ var latin=s.replace(CJK," ").replace(/\s{2,}/g," ").replace(/\s*[-–—]\s*$/,"").replace(/^\s*[-–—]\s+/,"").trim();
+ return {latin:latin,zh:zh};
+}
+function nameNode(raw){
+ var p=splitName(raw),w=document.createElement("span"),main;
+ if(lang==="zh"&&p.zh)main=p.zh;else main=p.latin||p.zh;
+ w.appendChild(el("span",(lang==="zh"&&p.zh)?"zh-main":null,main));
+ return w;
+}
+/* Clover hosts each dish photo on its CDN, keyed by the item id; a 404 simply
+   means this dish has no photo yet, so the node removes itself. */
+function photoUrl(id){return "https://cloverstatic.com/menu-assets/items/"+encodeURIComponent(id)+"_750x563.jpeg"}
+function photoNode(id){
+ var im=document.createElement("img");
+ im.loading="lazy";im.decoding="async";im.alt="";im.width=750;im.height=563;
+ im.onload=function(){im.classList.add("on")};
+ im.onerror=function(){var c=im.closest(".card");im.remove();if(c)c.classList.add("nophoto")};
+ im.src=photoUrl(id);
+ return im;
+}
+function renderTabs(){
+ var w=$("ktabs");w.innerHTML="";
+ w.setAttribute("aria-label",T.kitchenLbl||"Kitchen");
+ KITCHENS.forEach(function(k){
+  var b=el("button",k.slug===slug?"on":null);b.type="button";b.setAttribute("role","tab");
+  b.setAttribute("aria-selected",k.slug===slug?"true":"false");
+  b.appendChild(document.createTextNode(k.name));
+  b.onclick=function(){if(slug===k.slug)return;slug=k.slug;
+   try{localStorage.setItem("lx_kitchen",slug)}catch(e){}
+   renderTabs();loadMenu()};
+  w.appendChild(b);
+ });
+}
+function skeleton(){
+ var c=$("cats");c.innerHTML="";$("chips").innerHTML="";
+ c.appendChild(el("div","skel",T.loading));
+ for(var i=0;i<3;i++)c.appendChild(el("div","skrow"));
+}
+function loadMenu(){
+ skeleton();
+ var s=slug;
+ fetch(API+"/api/menu/"+s).then(function(r){if(!r.ok)throw 0;return r.json()})
+ .then(function(m){if(slug!==s)return;menuData=m;renderMenu()})
+ .catch(function(){
+  if(slug!==s)return;
+  var c=$("cats");c.innerHTML="";
+  var box=el("div","skel");box.appendChild(document.createTextNode(T.menuFail+" "));
+  var rb=el("button","btn",T.retry);rb.type="button";rb.style.marginLeft=".5rem";rb.onclick=loadMenu;
+  box.appendChild(rb);c.appendChild(box);
+ });
+}
+function renderMenu(){
+ $("mnote").textContent=T.liveNote;
+ var cats=(menuData.categories||[]).filter(function(c){return c.items&&c.items.length});
+ var chips=$("chips");chips.innerHTML="";
+ var wrap=$("cats");wrap.innerHTML="";
+ if(chipObs)chipObs.disconnect();
+ var chipEls=[];
+ cats.forEach(function(c,ci){
+  var cn=splitName(c.name);
+  var chip=el("button","chip"+(ci===0?" on":""),(lang==="zh"&&cn.zh)?cn.zh:(cn.latin||cn.zh));
+  chip.type="button";
+  chip.onclick=function(){var t=$("cat-"+ci);if(t)t.scrollIntoView({behavior:"smooth",block:"start"})};
+  chips.appendChild(chip);chipEls.push(chip);
+
+  var sec=el("div","cat");sec.id="cat-"+ci;sec.setAttribute("data-ci",ci);
+  var hh=el("h2");hh.appendChild(nameNode(c.name));sec.appendChild(hh);
+
+  /* dishes with their own photo become cards; the rest stay a compact list */
+  var grid=el("div","cards");
+  c.items.forEach(function(it){
+   var card=el("div","card");
+   card.appendChild(photoNode(it.id));
+   var b=el("div","b");
+   var n=el("div","n");n.appendChild(nameNode(it.name));b.appendChild(n);
+   if(it.description)b.appendChild(el("div","d",it.description));
+   b.appendChild(el("div","p",money(it.priceCents)));
+   card.appendChild(b);grid.appendChild(card);
+  });
+  sec.appendChild(grid);
+  wrap.appendChild(sec);
+ });
+ chipObs=new IntersectionObserver(function(en){
+  en.forEach(function(e){
+   if(e.isIntersecting){
+    var ci=+e.target.getAttribute("data-ci");
+    chipEls.forEach(function(ch,i){ch.className="chip"+(i===ci?" on":"")});
+    if(chipEls[ci])chipEls[ci].scrollIntoView({inline:"nearest",block:"nearest"});
+   }});
+ },{rootMargin:"-130px 0px -70% 0px"});
+ wrap.querySelectorAll(".cat").forEach(function(s){chipObs.observe(s)});
+}
+renderTabs();loadMenu();
+
 applyLang();
 /* reveal on scroll (falls back instantly without IO) */
 if("IntersectionObserver" in window){
