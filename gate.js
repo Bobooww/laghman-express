@@ -275,6 +275,17 @@
        override, so paint it inline where nothing outranks it */
     var rec = document.querySelector(".recognition");
     if (rec) rec.style.setProperty("background", "#0b120e", "important");
+    /* phones get the vertical cut of the hero film — the landscape one arrives
+       auto-cropped to a squeezed slice on a portrait screen */
+    if (window.matchMedia && matchMedia("(max-width: 720px)").matches) {
+      var hv = document.querySelector(".hero video");
+      if (hv && (hv.currentSrc || hv.src || "").indexOf("craft-pull.mp4") !== -1) {
+        hv.poster = BASE + "assets/film/craft-pull-m.jpg";
+        hv.src = BASE + "assets/film/craft-pull-m.mp4";
+        hv.load();
+        var pl = hv.play(); if (pl && pl.catch) pl.catch(function () {});
+      }
+    }
     var cr = document.getElementById("craft");
     if (cr) {
       [].forEach.call(cr.querySelectorAll("video"), function (v) {
