@@ -269,6 +269,10 @@
 
   function boot() {
     /* the craft section is retired (client 2026-08-22): stop its videos, drop the node */
+    /* the NYT section takes the dark cloth; its stylesheet resists a head
+       override, so paint it inline where nothing outranks it */
+    var rec = document.querySelector(".recognition");
+    if (rec) rec.style.setProperty("background", "#0b120e", "important");
     var cr = document.getElementById("craft");
     if (cr) {
       [].forEach.call(cr.querySelectorAll("video"), function (v) {
