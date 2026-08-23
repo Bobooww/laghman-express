@@ -274,7 +274,7 @@
     /* the NYT section takes the dark cloth; its stylesheet resists a head
        override, so paint it inline where nothing outranks it */
     var rec = document.querySelector(".recognition");
-    if (rec) rec.style.setProperty("background", "#0b120e", "important");
+    if (rec) rec.style.setProperty("background", "#183022", "important"); /* the craft cloth green — client reference */
     /* phones get the vertical cut of the hero film — the landscape one arrives
        auto-cropped to a squeezed slice on a portrait screen */
     function mobileHero() {
