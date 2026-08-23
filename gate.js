@@ -150,12 +150,6 @@
     ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true");
     ov.setAttribute("aria-labelledby", "lxg-h");
     var p = document.createElement("div"); p.className = "p"; ov.appendChild(p);
-    /* the opening moment carries the client's own lockup (light-background version) */
-    var lk = document.createElement("img");
-    lk.src = BASE + "assets/logo-lockup-light.png"; lk.alt = "Laghman Express";
-    lk.width = 132; lk.height = 117;
-    lk.style.cssText = "display:block;margin:0 auto 1rem;width:132px;height:auto";
-    p.appendChild(lk);
     var h = document.createElement("h2"); h.id = "lxg-h"; h.textContent = T.h; p.appendChild(h);
     var s = document.createElement("p"); s.className = "s"; s.textContent = T.sub; p.appendChild(s);
     var row = document.createElement("div"); row.className = "row";
