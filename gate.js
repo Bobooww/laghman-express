@@ -283,9 +283,9 @@
       if (!hv) return;
       var src = hv.currentSrc || hv.src || "";
       if (src.indexOf("hero-film-") === -1 && src.indexOf("craft-pull.mp4") === -1) return;
-      if (src.indexOf("hero-film-b-m.mp4") !== -1) return;
-      hv.poster = BASE + "assets/film/hero-film-b-m.jpg";
-      hv.src = BASE + "assets/film/hero-film-b-m.mp4";
+      if (src.indexOf("hero-film-c-m.mp4") !== -1) return;
+      hv.poster = BASE + "assets/film/hero-film-c-m.jpg";
+      hv.src = BASE + "assets/film/hero-film-c-m.mp4";
       hv.load();
       var pl = hv.play(); if (pl && pl.catch) pl.catch(function () {});
     }
