@@ -270,7 +270,9 @@
     lockScroll();
     if (REDUCED) { ov.classList.add("in"); }
     else { requestAnimationFrame(function () { requestAnimationFrame(function () { ov.classList.add("in"); }); }); }
-    near.hidden ? zip.focus() : near.focus();
+    try { near.hidden ? zip.focus({ preventScroll: true }) : near.focus({ preventScroll: true }); }
+    catch (e) { near.hidden ? zip.focus() : near.focus(); }
+    p.scrollTop = 0; /* the lockup leads — never open pre-scrolled past it */
   }
 
   function boot() {
