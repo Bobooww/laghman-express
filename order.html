@@ -30,7 +30,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Instrument+Sans:wght@400;600;700&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://bobooww.github.io/laghman-express/#org","name":"Laghman Express","url":"https://bobooww.github.io/laghman-express/","logo":"https://bobooww.github.io/laghman-express/assets/icon-512.png"},{"@type":"Restaurant","name":"Laghman Express — 20th Avenue","parentOrganization":{"@id":"https://bobooww.github.io/laghman-express/#org"},"servesCuisine":"Central Asian","telephone":"+1-718-232-0525","priceRange":"$$","address":{"@type":"PostalAddress","streetAddress":"6201 20th Ave","addressLocality":"Brooklyn","addressRegion":"NY","postalCode":"11204","addressCountry":"US"},"geo":{"@type":"GeoCoordinates","latitude":40.6175,"longitude":-73.9903},"hasMenu":"https://bobooww.github.io/laghman-express/order?k=20th-ave","potentialAction":{"@type":"OrderAction","target":"https://bobooww.github.io/laghman-express/order?k=20th-ave","deliveryMethod":"http://purl.org/goodrelations/v1#DeliveryModePickup"}},{"@type":"Restaurant","name":"Laghman Express — Coney Island Avenue","parentOrganization":{"@id":"https://bobooww.github.io/laghman-express/#org"},"servesCuisine":"Central Asian","telephone":"+1-718-233-8333","priceRange":"$$","address":{"@type":"PostalAddress","streetAddress":"2376 Coney Island Ave","addressLocality":"Brooklyn","addressRegion":"NY","postalCode":"11223","addressCountry":"US"},"geo":{"@type":"GeoCoordinates","latitude":40.606,"longitude":-73.9663},"hasMenu":"https://bobooww.github.io/laghman-express/order?k=coney-island","potentialAction":{"@type":"OrderAction","target":"https://bobooww.github.io/laghman-express/order?k=coney-island","deliveryMethod":"http://purl.org/goodrelations/v1#DeliveryModePickup"}},{"@type":"Restaurant","name":"Laghman Express — Emmons Avenue","parentOrganization":{"@id":"https://bobooww.github.io/laghman-express/#org"},"servesCuisine":"Central Asian","telephone":"+1-347-272-2559","priceRange":"$$","address":{"@type":"PostalAddress","streetAddress":"1809 Emmons Ave","addressLocality":"Brooklyn","addressRegion":"NY","postalCode":"11235","addressCountry":"US"},"geo":{"@type":"GeoCoordinates","latitude":40.5838,"longitude":-73.9425},"hasMenu":"https://bobooww.github.io/laghman-express/order?k=emmons-ave","potentialAction":{"@type":"OrderAction","target":"https://bobooww.github.io/laghman-express/order?k=emmons-ave","deliveryMethod":"http://purl.org/goodrelations/v1#DeliveryModePickup"}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://bobooww.github.io/laghman-express/#org","name":"Laghman Express","url":"https://bobooww.github.io/laghman-express/","logo":"https://bobooww.github.io/laghman-express/assets/icon-512.png"},{"@type":"Restaurant","name":"Laghman Express — 20th Avenue","parentOrganization":{"@id":"https://bobooww.github.io/laghman-express/#org"},"servesCuisine":"Central Asian","telephone":"+1-718-232-0525","priceRange":"$$","address":{"@type":"PostalAddress","streetAddress":"6201 20th Ave","addressLocality":"Brooklyn","addressRegion":"NY","postalCode":"11204","addressCountry":"US"},"geo":{"@type":"GeoCoordinates","latitude":40.6175,"longitude":-73.9903},"hasMenu":"https://bobooww.github.io/laghman-express/order?k=20th-ave","potentialAction":{"@type":"OrderAction","target":"https://bobooww.github.io/laghman-express/order?k=20th-ave","deliveryMethod":"http://purl.org/goodrelations/v1#DeliveryModePickup"}},{"@type":"Restaurant","name":"Laghman Express — Coney Island Avenue","parentOrganization":{"@id":"https://bobooww.github.io/laghman-express/#org"},"servesCuisine":"Central Asian","telephone":"+1-718-233-8333","priceRange":"$$","address":{"@type":"PostalAddress","streetAddress":"2376 Coney Island Ave","addressLocality":"Brooklyn","addressRegion":"NY","postalCode":"11223","addressCountry":"US"},"geo":{"@type":"GeoCoordinates","latitude":40.606,"longitude":-73.9663},"hasMenu":"https://bobooww.github.io/laghman-express/order?k=coney-island","potentialAction":{"@type":"OrderAction","target":"https://bobooww.github.io/laghman-express/order?k=coney-island","deliveryMethod":"http://purl.org/goodrelations/v1#DeliveryModePickup"}},{"@type":"Restaurant","name":"Laghman Express — Emmons Avenue","parentOrganization":{"@id":"https://bobooww.github.io/laghman-express/#org"},"servesCuisine":"Central Asian","telephone":"+1-718-247-4343","priceRange":"$$","address":{"@type":"PostalAddress","streetAddress":"1809 Emmons Ave","addressLocality":"Brooklyn","addressRegion":"NY","postalCode":"11235","addressCountry":"US"},"geo":{"@type":"GeoCoordinates","latitude":40.5838,"longitude":-73.9425},"hasMenu":"https://bobooww.github.io/laghman-express/order?k=emmons-ave","potentialAction":{"@type":"OrderAction","target":"https://bobooww.github.io/laghman-express/order?k=emmons-ave","deliveryMethod":"http://purl.org/goodrelations/v1#DeliveryModePickup"}}]}</script>
 <style>
 /* Laghman Express /order v2 — standalone page, same design tokens as the site.
    Talks to the live ordering API; prices are server-authoritative.
@@ -438,7 +438,7 @@ var KITCHENS=[
   oh:{o:660,c:1320},tz:"America/New_York",
   hours:{en:"Daily 11 am – 10 pm",ru:"Ежедневно 11:00–22:00",zh:"每日 11:00–22:00"}},
  {slug:"emmons-ave",api:true,region:"ny",name:"Emmons Ave",area:{en:"Sheepshead Bay",ru:"Шипсхед-Бэй",zh:"羊头湾"},
-  zips:["11235"],addr:"1809 Emmons Ave, Brooklyn, NY 11235",phone:"(347) 272-2559",tel:"+13472722559",lat:40.5838,lng:-73.9425,
+  zips:["11235"],addr:"1809 Emmons Ave, Brooklyn, NY 11235",phone:"(718) 247-4343",tel:"+17182474343",lat:40.5838,lng:-73.9425,
   oh:{o:660,c:1380},tz:"America/New_York",
   hours:{en:"Daily 11 am – 11 pm",ru:"Ежедневно 11:00–23:00",zh:"每日 11:00–23:00"}},
  {slug:"alpharetta",api:false,region:"ga",name:"Alpharetta, GA",area:{en:"Windward Plaza",ru:"Уиндворд-Плаза",zh:"温德沃德广场"},
@@ -821,8 +821,17 @@ function pruneCart(){
  }
 }
 var chipObserver=null;
+/* the table reads like a meal: dishes first, then drinks and desserts.
+   Clover's own sortOrder holds WITHIN each group. */
+var LATE=/\b(drinks?|beverages?|sodas?|sparkling|juices?|milkshakes?|lemonades?|smoothies?|coffee|teas?|matcha|ayran|water|desserts?|cakes?)\b|饮|茶|咖啡|果汁|奶昔|柠檬水|甜品|蛋糕/i;
+function menuRank(name){return LATE.test(name)?1:0}
+function sortCats(list){
+ return list.map(function(c,i){return {c:c,i:i}})
+  .sort(function(a,b){return menuRank(a.c.name)-menuRank(b.c.name)||a.i-b.i})
+  .map(function(x){return x.c});
+}
 function renderMenu(){
- var cats=(state.menu.categories||[]).filter(function(c){return c.items&&c.items.length});
+ var cats=sortCats((state.menu.categories||[]).filter(function(c){return c.items&&c.items.length}));
  var chips=$("chips");chips.innerHTML="";
  var wrap=$("cats");wrap.innerHTML="";
  if(chipObserver)chipObserver.disconnect();

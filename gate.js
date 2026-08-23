@@ -268,6 +268,14 @@
   }
 
   function boot() {
+    /* the craft section is retired (client 2026-08-22): stop its videos, drop the node */
+    var cr = document.getElementById("craft");
+    if (cr) {
+      [].forEach.call(cr.querySelectorAll("video"), function (v) {
+        try { v.pause(); v.removeAttribute("src"); v.removeAttribute("autoplay"); v.load(); } catch (e) {}
+      });
+      cr.remove();
+    }
     rewrite();
     setTimeout(rewrite, 1500); /* late client re-renders */
     var skipped = false;

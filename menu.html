@@ -372,9 +372,18 @@ function loadMenu(){
   box.appendChild(rb);c.appendChild(box);
  });
 }
+/* the table reads like a meal: dishes first, then drinks and desserts.
+   Clover's own sortOrder holds WITHIN each group. */
+var LATE=/\b(drinks?|beverages?|sodas?|sparkling|juices?|milkshakes?|lemonades?|smoothies?|coffee|teas?|matcha|ayran|water|desserts?|cakes?)\b|饮|茶|咖啡|果汁|奶昔|柠檬水|甜品|蛋糕/i;
+function menuRank(name){return LATE.test(name)?1:0}
+function sortCats(list){
+ return list.map(function(c,i){return {c:c,i:i}})
+  .sort(function(a,b){return menuRank(a.c.name)-menuRank(b.c.name)||a.i-b.i})
+  .map(function(x){return x.c});
+}
 function renderMenu(){
  $("mnote").textContent=T.liveNote;
- var cats=(menuData.categories||[]).filter(function(c){return c.items&&c.items.length});
+ var cats=sortCats((menuData.categories||[]).filter(function(c){return c.items&&c.items.length}));
  var chips=$("chips");chips.innerHTML="";
  var wrap=$("cats");wrap.innerHTML="";
  if(chipObs)chipObs.disconnect();
