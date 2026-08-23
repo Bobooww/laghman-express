@@ -277,15 +277,19 @@
     if (rec) rec.style.setProperty("background", "#0b120e", "important");
     /* phones get the vertical cut of the hero film — the landscape one arrives
        auto-cropped to a squeezed slice on a portrait screen */
-    if (window.matchMedia && matchMedia("(max-width: 720px)").matches) {
+    function mobileHero() {
+      if (!(window.matchMedia && matchMedia("(max-width: 720px)").matches)) return;
       var hv = document.querySelector(".hero video");
-      if (hv && (hv.currentSrc || hv.src || "").indexOf("craft-pull.mp4") !== -1) {
-        hv.poster = BASE + "assets/film/craft-pull-m.jpg";
-        hv.src = BASE + "assets/film/craft-pull-m.mp4";
-        hv.load();
-        var pl = hv.play(); if (pl && pl.catch) pl.catch(function () {});
-      }
+      if (!hv) return;
+      var src = hv.currentSrc || hv.src || "";
+      if (src.indexOf("hero-film-a.mp4") === -1 && src.indexOf("craft-pull.mp4") === -1) return;
+      hv.poster = BASE + "assets/film/hero-film-a-m.jpg";
+      hv.src = BASE + "assets/film/hero-film-a-m.mp4";
+      hv.load();
+      var pl = hv.play(); if (pl && pl.catch) pl.catch(function () {});
     }
+    mobileHero();
+    setTimeout(mobileHero, 1200); /* the page may attach its src after us */
     var cr = document.getElementById("craft");
     if (cr) {
       [].forEach.call(cr.querySelectorAll("video"), function (v) {
