@@ -10,7 +10,7 @@
       lx_kitchen / lx_region — the same keys the /order page uses. */
 (function () {
   "use strict";
-  var BASE = "/";
+  var BASE = "/laghman-express/";
   var REDUCED = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var KITCHENS = [
     { slug: "20th-ave", api: true, region: "ny", name: "20th Ave",
