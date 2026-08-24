@@ -356,12 +356,37 @@ function nameNode(raw){
 /* Clover hosts each dish photo on its CDN, keyed by the item id; a 404 simply
    means this dish has no photo yet, so the node removes itself. */
 function photoUrl(id){return "https://cloverstatic.com/menu-assets/items/"+encodeURIComponent(id)+"_750x563.jpeg"}
+/* fetches scheduled by hand — engine lazy-loading can defer forever while
+   the reveal waits on the load (see order page, same fix) */
+var PHQ=[];
+var PHIO="IntersectionObserver" in window?new IntersectionObserver(function(en){
+ en.forEach(function(e){if(e.isIntersecting)phLoad(e.target)});
+},{rootMargin:"900px"}):null;
+function phLoad(im){
+ if(!im.getAttribute("data-src"))return;
+ im.src=im.getAttribute("data-src");im.removeAttribute("data-src");
+ if(PHIO)PHIO.unobserve(im);
+}
+function phSweep(){
+ var left=false;
+ for(var i=0;i<PHQ.length;i++){var im=PHQ[i];
+  if(!im.getAttribute("data-src")||!document.contains(im))continue;
+  left=true;
+  var r=im.getBoundingClientRect();
+  if(r.top<innerHeight+900&&r.bottom>-900)phLoad(im);
+ }
+ if(left)setTimeout(phSweep,700);
+ else PHQ.length=0;
+}
 function photoNode(id){
  var im=document.createElement("img");
- im.loading="lazy";im.decoding="async";im.alt="";im.width=750;im.height=563;
+ im.decoding="async";im.alt="";im.width=750;im.height=563;
  im.onload=function(){im.classList.add("on")};
  im.onerror=function(){var c=im.closest(".card");im.remove();if(c)c.classList.add("nophoto")};
- im.src=photoUrl(id);
+ im.setAttribute("data-src",photoUrl(id));
+ if(PHIO)PHIO.observe(im);
+ if(!PHQ.length)setTimeout(phSweep,300);
+ PHQ.push(im);
  return im;
 }
 function renderTabs(){

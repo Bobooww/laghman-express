@@ -549,9 +549,33 @@ function money(c){return "$"+(c/100).toFixed(2)}
    node removes itself, so new photos appear the moment the kitchen uploads one. */
 function photoUrl(id,big){return "https://cloverstatic.com/menu-assets/items/"+
  encodeURIComponent(id)+(big?"_1500x1125":"_750x563")+".jpeg"}
+/* the engine's own lazy-loading proved unreliable here: the fetch can stay
+   deferred forever while the clip-path reveal waits for it — empty tiles.
+   So the fetches are scheduled by hand: an observer for the normal case and
+   a sweep timer for every environment where observers go quiet */
+var PHQ=[];
+var PHIO="IntersectionObserver" in window?new IntersectionObserver(function(en){
+ en.forEach(function(e){if(e.isIntersecting)phLoad(e.target)});
+},{rootMargin:"900px"}):null;
+function phLoad(im){
+ if(!im.getAttribute("data-src"))return;
+ im.src=im.getAttribute("data-src");im.removeAttribute("data-src");
+ if(PHIO)PHIO.unobserve(im);
+}
+function phSweep(){
+ var left=false;
+ for(var i=0;i<PHQ.length;i++){var im=PHQ[i];
+  if(!im.getAttribute("data-src")||!document.contains(im))continue;
+  left=true;
+  var r=im.getBoundingClientRect();
+  if(r.top<innerHeight+900&&r.bottom>-900)phLoad(im);
+ }
+ if(left)setTimeout(phSweep,700);
+ else PHQ.length=0;
+}
 function photoNode(id,cls,big){
  var im=document.createElement("img");
- im.className=cls;im.loading="lazy";im.decoding="async";im.alt="";
+ im.className=cls;im.decoding="async";im.alt="";
  im.width=big?800:120;im.height=big?600:90;
  im.onload=function(){im.classList.add("on")};
  im.onerror=function(){
@@ -563,7 +587,13 @@ function photoNode(id,cls,big){
    if(im.parentNode)im.parentNode.replaceChild(t,im);
   }else im.remove();
  };
- im.src=photoUrl(id,big);
+ if(big)im.src=photoUrl(id,big);
+ else{
+  im.setAttribute("data-src",photoUrl(id,big));
+  if(PHIO)PHIO.observe(im);
+  if(!PHQ.length)setTimeout(phSweep,300);
+  PHQ.push(im);
+ }
  return im;
 }
 /* fetch with a 12s timeout — a hung request must surface as a retryable error */
