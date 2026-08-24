@@ -5,4 +5,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://bobooww.github.io/laghman-express/sitemap.xml
+Sitemap: https://laghmanexpress.com/sitemap.xml

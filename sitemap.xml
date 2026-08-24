@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://bobooww.github.io/laghman-express/</loc>
+    <loc>https://laghmanexpress.com/</loc>
     <lastmod>2026-08-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://bobooww.github.io/laghman-express/about/</loc>
+    <loc>https://laghmanexpress.com/about/</loc>
     <lastmod>2026-08-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bobooww.github.io/laghman-express/order</loc>
+    <loc>https://laghmanexpress.com/order</loc>
     <lastmod>2026-08-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://bobooww.github.io/laghman-express/menu</loc>
+    <loc>https://laghmanexpress.com/menu</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://bobooww.github.io/laghman-express/about-us</loc>
+    <loc>https://laghmanexpress.com/about-us</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
