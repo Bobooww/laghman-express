@@ -273,8 +273,26 @@
     /* the craft section is retired (client 2026-08-22): stop its videos, drop the node */
     /* the NYT section takes the dark cloth; its stylesheet resists a head
        override, so paint it inline where nothing outranks it */
-    var rec = document.querySelector(".recognition");
-    if (rec) rec.style.setProperty("background", "#183022", "important"); /* the craft cloth green — client reference */
+    var LX_CLOTH = "data:image/svg+xml,%3Csvg%20viewBox=%270%200%20120%20120%27%20xmlns=%27http://www.w3.org/2000/svg%27%20stroke=%27%23f5efdf%27%20stroke-width=%272.4%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20fill=%27none%27%3E%3Cpath%20d=%27M60%2018%20102%2060%2060%20102%2018%2060Z%27/%3E%3Cpath%20d=%27M60%2034%2086%2060%2060%2086%2034%2060Z%27%20stroke-dasharray=%272%205%27/%3E%3Cpath%20d=%27M60%2054l6%206-6%206-6-6z%27/%3E%3Cpath%20d=%27M42%200%200%2042M78%200%20120%2042M0%2078%2042%20120M120%2078%2078%20120%27/%3E%3Cpath%20d=%27M21%200%200%2021M99%200%20120%2021M0%2099%2021%20120M120%2099%2099%20120%27%20stroke-dasharray=%272%205%27/%3E%3C/svg%3E";
+    function lxRecognition() {
+      var rec = document.querySelector(".recognition");
+      if (!rec) return;
+      rec.style.setProperty("background", "#183022", "important"); /* the craft cloth green — client reference */
+      /* the section's own ::before is a radial glow that outranks the .cloth
+         diamond layer, so the diamonds ride in as a layer of their own */
+      rec.style.setProperty("isolation", "isolate");
+      if (getComputedStyle(rec).position === "static") rec.style.position = "relative";
+      if (!rec.querySelector(".lx-cloth")) {
+        var cloth = document.createElement("div");
+        cloth.className = "lx-cloth";
+        cloth.setAttribute("aria-hidden", "true");
+        cloth.style.cssText = "position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.05;background-size:120px 120px;background-image:url(" + LX_CLOTH + ")";
+        rec.insertBefore(cloth, rec.firstChild);
+      }
+    }
+    lxRecognition();
+    setTimeout(lxRecognition, 1500); /* hydration may rebuild the section after us */
+    setTimeout(lxRecognition, 4000);
     /* phones get the vertical cut of the hero film — the landscape one arrives
        auto-cropped to a squeezed slice on a portrait screen */
     function mobileHero() {
