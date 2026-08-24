@@ -293,22 +293,23 @@
     lxRecognition();
     setTimeout(lxRecognition, 1500); /* hydration may rebuild the section after us */
     setTimeout(lxRecognition, 4000);
-    /* phones get the vertical cut of the hero film — the landscape one arrives
-       auto-cropped to a squeezed slice on a portrait screen */
-    function mobileHero() {
-      if (!(window.matchMedia && matchMedia("(max-width: 720px)").matches)) return;
+    /* the current hero film is generation d; phones get the lighter cut.
+       swapping here (not only in the page chunk) also carries users whose
+       cached chunk still points at an older generation */
+    function heroFilm() {
       var hv = document.querySelector(".hero video");
       if (!hv) return;
       var src = hv.currentSrc || hv.src || "";
       if (src.indexOf("hero-film-") === -1 && src.indexOf("craft-pull.mp4") === -1) return;
-      if (src.indexOf("hero-film-c-m.mp4") !== -1) return;
-      hv.poster = BASE + "assets/film/hero-film-c-m.jpg";
-      hv.src = BASE + "assets/film/hero-film-c-m.mp4";
+      var name = (window.matchMedia && matchMedia("(max-width: 720px)").matches) ? "hero-film-d-m" : "hero-film-d";
+      if (src.indexOf(name + ".mp4") !== -1) return;
+      hv.poster = BASE + "assets/film/" + name + ".jpg";
+      hv.src = BASE + "assets/film/" + name + ".mp4";
       hv.load();
       var pl = hv.play(); if (pl && pl.catch) pl.catch(function () {});
     }
-    mobileHero();
-    setTimeout(mobileHero, 1200); /* the page may attach its src after us */
+    heroFilm();
+    setTimeout(heroFilm, 1200); /* the page may attach its src after us */
     var cr = document.getElementById("craft");
     if (cr) {
       [].forEach.call(cr.querySelectorAll("video"), function (v) {
