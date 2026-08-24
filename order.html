@@ -518,6 +518,26 @@ var STR={
 var lang=(function(){try{var s=localStorage.getItem("lx_lang");if(s==="ru"||s==="zh"||s==="en")return s;}catch(e){}
  var n=(navigator.language||"").toLowerCase();return n.indexOf("ru")===0?"ru":n.indexOf("zh")===0?"zh":"en";})();
 var T=STR[lang];
+/* Clover holds descriptions in English only — ru/zh live in a static map beside this page */
+var DMAP=null,DMAP_P=null;
+function ensureDmap(){
+ if(lang==="en"||DMAP)return DMAP_P||Promise.resolve();
+ if(!DMAP_P)DMAP_P=fetch("i18n-ru-zh-a.json").then(function(r){return r.ok?r.json():null})
+  .then(function(j){DMAP=j}).catch(function(){});
+ return DMAP_P;
+}
+if(lang!=="en")ensureDmap();
+function dtr(s){if(!DMAP||lang==="en"||!s)return s;var e=DMAP.d[s];return (e&&(lang==="ru"?e[0]:e[1]))||s}
+function catText(raw){
+ var p=splitName(raw),base=(lang==="zh"&&p.zh)?p.zh:(p.latin||p.zh);
+ var e=(DMAP&&DMAP.c)?DMAP.c[p.latin]:null;if(!e||lang==="en")return base;
+ if(lang==="ru")return e[0]||base;
+ return p.zh||e[1]||base;
+}
+function catNode(raw){
+ var t=catText(raw),w=document.createElement("span");
+ w.appendChild(el("span",lang==="zh"?"zh-main":null,t));return w;
+}
 var state={slug:null,menu:null,cart:[],quote:null,quoteBusy:false,quoteErr:false,quoteFails:0,
   cfg:null,idem:null};
 var quoteSeq=0,quoteTimer=null,modCache={},lastTotal=null;
@@ -604,7 +624,9 @@ function applyLang(){
   b.setAttribute("aria-pressed",p[0]===lang?"true":"false");
   b.onclick=function(){lang=p[0];applyLang();setHdrVar();renderGate();setHdrVar();
    if(state.slug){renderMenuChrome();if(state.menu)renderMenu()}
-   ckMode=null;renderCart();};
+   ckMode=null;renderCart();updateBar();
+   var had=!!DMAP;
+   ensureDmap().then(function(){if(!had&&DMAP&&state.slug&&state.menu)renderMenu()});};
   lb.appendChild(b);});
 }
 function haversine(a,b,c,d){var R=3958.8,p=Math.PI/180;
@@ -790,6 +812,7 @@ function loadMenu(){
  menuSkeleton();$("chips").innerHTML="";
  var s=state.slug;
  tfetch(API+"/api/menu/"+s).then(function(r){if(!r.ok)throw 0;return r.json()})
+ .then(function(m){return Promise.resolve(ensureDmap()).then(function(){return m})})
  .then(function(m){
   if(state.slug!==s)return;
   state.menu=m;renderMenu();pruneCart();
@@ -837,20 +860,19 @@ function renderMenu(){
  if(chipObserver)chipObserver.disconnect();
  var chipEls=[];
  cats.forEach(function(c,ci){
-  var cn=splitName(c.name);
-  var chipText=(lang==="zh"&&cn.zh)?cn.zh:(cn.latin||cn.zh);
+  var chipText=catText(c.name);
   var chip=el("button","chip"+(ci===0?" on":""),chipText);chip.type="button";
   chip.setAttribute("aria-current",ci===0?"true":"false");
   chip.onclick=function(){var t=document.getElementById("cat-"+ci);if(t)t.scrollIntoView({behavior:SMOOTH,block:"start"})};
   chips.appendChild(chip);chipEls.push(chip);
   var sec=el("div","cat");sec.id="cat-"+ci;sec.setAttribute("data-ci",ci);
-  var h=el("h2");h.appendChild(nameNode(c.name));sec.appendChild(h);
+  var h=el("h2");h.appendChild(catNode(c.name));sec.appendChild(h);
   var grid=el("div","items");
   c.items.forEach(function(it){
    var d=el("div","it");
    d.appendChild(photoNode(it.id,"th",false));
    var nm=el("span","nm");nm.appendChild(nameNode(it.name));
-   if(it.description)nm.appendChild(el("small","desc",it.description));
+   if(it.description)nm.appendChild(el("small","desc",dtr(it.description)));
    d.appendChild(nm);
    d.appendChild(el("span","pr",money(it.priceCents)));
    var b=el("button","add");b.type="button";b.appendChild(icon("plus",19));
@@ -919,7 +941,7 @@ function openMod(){
  var hero=photoNode(modCtx.item.id,"mhero",true);
  sh.insertBefore(hero,sh.querySelector(".xclose").nextSibling);
  var mn=$("modName");mn.innerHTML="";mn.appendChild(nameNode(modCtx.item.name));
- var md=$("modDesc");md.textContent=modCtx.item.description||"";md.hidden=!modCtx.item.description;
+ var md=$("modDesc");md.textContent=dtr(modCtx.item.description||"")||"";md.hidden=!modCtx.item.description;
  mn.appendChild(el("span","mprice"," · "+money(modCtx.item.priceCents||0)));
  var wrap=$("modGroups");wrap.innerHTML="";$("modErr").textContent="";
  modCtx.groups.forEach(function(g,gi){

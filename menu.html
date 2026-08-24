@@ -183,7 +183,7 @@ img{max-width:100%;display:block}
     <source type="image/webp" media="(max-width:700px)" srcset="assets/menu-hero-900.webp">
     <source type="image/webp" srcset="assets/menu-hero.webp">
     <source media="(max-width:700px)" srcset="assets/menu-hero-900.jpg">
-    <img src="assets/menu-hero.jpg" alt="A bowl of hand-pulled guyurou laghman with beef and peppers"
+    <img src="assets/menu-hero.jpg" alt="A bowl of hand-pulled guyurou laghman with beef and peppers" id="heroImg"
          width="1800" height="788" fetchpriority="high" decoding="async">
   </picture>
   <div class="hero-in shell">
@@ -256,7 +256,7 @@ function icon(name,size){
  return s;
 }
 var STR={
- en:{docTitle:"Menu — Laghman Express",back:"← Back to site",order:"Order",
+ en:{docTitle:"Menu — Laghman Express",back:"← Back to site",order:"Order",heroAlt:"A bowl of hand-pulled guyurou laghman with beef and peppers",
   h1:"One dough. A whole table.",
   sub:"Hand-pulled laghman noodles are the heart of the kitchen — pulled to order, never ahead. Around them: steamed manty, crackling samsa, slow soups and wok-fired mains from the Central Asian table. Everything is halal.",
   ctaTop:"Order pickup",halal:"100% halal",
@@ -266,7 +266,7 @@ var STR={
   liveNote:"Live menu from this kitchen's register — dishes and prices as they are today. Photos are the kitchen's own.",
   loading:"Loading the menu…",menuFail:"The menu is taking a break.",retry:"Try again",alsoHere:"Also on the menu",
   kitchenLbl:"Kitchen"},
- ru:{docTitle:"Меню — Laghman Express",back:"← На сайт",order:"Заказать",
+ ru:{docTitle:"Меню — Laghman Express",back:"← На сайт",order:"Заказать",heroAlt:"Тарелка тянутого лагмана гуйру с говядиной и перцем",
   h1:"Одно тесто. Целый стол.",
   sub:"Сердце кухни — лагман ручной вытяжки: тесто тянут под заказ, никогда заранее. Вокруг него — сочные манты, хрустящая самса, медленные супы и горячее из вока. Всё меню — халяль.",
   ctaTop:"Заказать самовывоз",halal:"100% халяль",
@@ -276,7 +276,7 @@ var STR={
   liveNote:"Живое меню с кассы этой кухни — блюда и цены как сегодня. Фото — их собственные.",
   loading:"Загружаем меню…",menuFail:"Меню отдыхает.",retry:"Попробовать ещё раз",alsoHere:"Ещё в меню",
   kitchenLbl:"Кухня"},
- zh:{docTitle:"菜单 — Laghman Express",back:"← 返回主页",order:"点餐",
+ zh:{docTitle:"菜单 — Laghman Express",back:"← 返回主页",order:"点餐",heroAlt:"一碗手工拉面，配牛肉和辣椒",
   h1:"一团面，一整桌。",
   sub:"手工拉面是这间厨房的心脏——现点现拉，绝不提前。围绕它的还有多汁的蒸包、酥脆的烤包子、慢火好汤和锅气十足的热菜。全部清真。",
   ctaTop:"在线点餐 · 自取",halal:"100% 清真",
@@ -290,17 +290,40 @@ var STR={
 var lang=(function(){try{var s=localStorage.getItem("lx_lang");if(s==="ru"||s==="zh"||s==="en")return s;}catch(e){}
  var n=(navigator.language||"").toLowerCase();return n.indexOf("ru")===0?"ru":n.indexOf("zh")===0?"zh":"en";})();
 var T=STR[lang];
+/* Clover holds descriptions in English only — ru/zh live in a static map beside this page */
+var DMAP=null,DMAP_P=null;
+function ensureDmap(){
+ if(lang==="en"||DMAP)return DMAP_P||Promise.resolve();
+ if(!DMAP_P)DMAP_P=fetch("i18n-ru-zh-a.json").then(function(r){return r.ok?r.json():null})
+  .then(function(j){DMAP=j}).catch(function(){});
+ return DMAP_P;
+}
+if(lang!=="en")ensureDmap();
+function dtr(s){if(!DMAP||lang==="en"||!s)return s;var e=DMAP.d[s];return (e&&(lang==="ru"?e[0]:e[1]))||s}
+function catText(raw){
+ var p=splitName(raw),base=(lang==="zh"&&p.zh)?p.zh:(p.latin||p.zh);
+ var e=(DMAP&&DMAP.c)?DMAP.c[p.latin]:null;if(!e||lang==="en")return base;
+ if(lang==="ru")return e[0]||base;
+ return p.zh||e[1]||base;
+}
+function catNode(raw){
+ var t=catText(raw),w=document.createElement("span");
+ w.appendChild(el("span",lang==="zh"?"zh-main":null,t));return w;
+}
 function applyLang(){
  document.documentElement.lang=lang==="zh"?"zh-CN":lang;T=STR[lang];
  document.title=T.docTitle;
  try{localStorage.setItem("lx_lang",lang)}catch(e){}
  var els=document.querySelectorAll("[data-i]");
  for(var i=0;i<els.length;i++){var k=els[i].getAttribute("data-i");if(T[k])els[i].textContent=T[k]}
+ var hi=document.getElementById("heroImg");if(hi)hi.alt=T.heroAlt;
  var lb=document.getElementById("lang");lb.innerHTML="";
  [["en","EN"],["ru","RU"],["zh","中文"]].forEach(function(p){
   var b=document.createElement("button");b.type="button";b.textContent=p[1];
   if(p[0]===lang)b.className="on";
-  b.onclick=function(){lang=p[0];applyLang();if(menuData){renderTabs();renderMenu()}};
+  b.onclick=function(){lang=p[0];applyLang();if(menuData){renderTabs();renderMenu()}else loadMenu();
+   var had=!!DMAP;
+   ensureDmap().then(function(){if(!had&&DMAP&&menuData){renderTabs();renderMenu()}})};
   lb.appendChild(b);});
 }
 
@@ -363,6 +386,7 @@ function loadMenu(){
  skeleton();
  var s=slug;
  fetch(API+"/api/menu/"+s).then(function(r){if(!r.ok)throw 0;return r.json()})
+ .then(function(m){return Promise.resolve(ensureDmap()).then(function(){return m})})
  .then(function(m){if(slug!==s)return;menuData=m;renderMenu()})
  .catch(function(){
   if(slug!==s)return;
@@ -389,14 +413,13 @@ function renderMenu(){
  if(chipObs)chipObs.disconnect();
  var chipEls=[];
  cats.forEach(function(c,ci){
-  var cn=splitName(c.name);
-  var chip=el("button","chip"+(ci===0?" on":""),(lang==="zh"&&cn.zh)?cn.zh:(cn.latin||cn.zh));
+  var chip=el("button","chip"+(ci===0?" on":""),catText(c.name));
   chip.type="button";
   chip.onclick=function(){var t=$("cat-"+ci);if(t)t.scrollIntoView({behavior:SMOOTH,block:"start"})};
   chips.appendChild(chip);chipEls.push(chip);
 
   var sec=el("div","cat");sec.id="cat-"+ci;sec.setAttribute("data-ci",ci);
-  var hh=el("h2");hh.appendChild(nameNode(c.name));sec.appendChild(hh);
+  var hh=el("h2");hh.appendChild(catNode(c.name));sec.appendChild(hh);
 
   /* dishes with their own photo become cards; the rest stay a compact list */
   var grid=el("div","cards");
@@ -405,7 +428,7 @@ function renderMenu(){
    card.appendChild(photoNode(it.id));
    var b=el("div","b");
    var n=el("div","n");n.appendChild(nameNode(it.name));b.appendChild(n);
-   if(it.description)b.appendChild(el("div","d",it.description));
+   if(it.description)b.appendChild(el("div","d",dtr(it.description)));
    b.appendChild(el("div","p",money(it.priceCents)));
    card.appendChild(b);grid.appendChild(card);
   });

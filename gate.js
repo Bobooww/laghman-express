@@ -293,6 +293,30 @@
     lxRecognition();
     setTimeout(lxRecognition, 1500); /* hydration may rebuild the section after us */
     setTimeout(lxRecognition, 4000);
+    /* the opening ink-drawing is the pre-rebrand mark — the client's own symbol
+       takes the stage instead. The drawn svg stays in the DOM (React owns it);
+       css retires it before it ever paints */
+    var inkCss = document.createElement("style");
+    inkCss.textContent = ".intro-ink .ink-mark{display:none!important}" +
+      ".intro-ink .lx-ink{width:min(56vw,300px);height:auto;opacity:0;transform:scale(.9) translateY(10px);" +
+      "filter:drop-shadow(0 0 34px rgba(246,241,228,.16)) drop-shadow(0 12px 28px rgba(0,0,0,.4));" +
+      "animation:lxInkIn 1.25s cubic-bezier(.2,.65,.25,1) .2s forwards}" +
+      "@keyframes lxInkIn{to{opacity:1;transform:none}}";
+    document.head.appendChild(inkCss);
+    function inkSwap() {
+      var st = document.querySelector(".intro-ink .ink-stage");
+      if (!st || st.querySelector(".lx-ink")) return;
+      var im = document.createElement("img");
+      im.className = "lx-ink";
+      im.alt = "";
+      im.setAttribute("aria-hidden", "true");
+      im.src = BASE + "assets/logo-mark-original.svg";
+      st.insertBefore(im, st.firstChild);
+    }
+    inkSwap();
+    var inkObs = new MutationObserver(inkSwap);
+    inkObs.observe(document.body, { childList: true, subtree: true });
+    setTimeout(function () { inkObs.disconnect(); }, 20000);
     /* the current hero film is generation d; phones get the lighter cut.
        swapping here (not only in the page chunk) also carries users whose
        cached chunk still points at an older generation */
