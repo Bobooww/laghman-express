@@ -218,6 +218,18 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 .nm .desc{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
   font-size:var(--t-6);color:var(--cream60);margin-top:.25rem;line-height:1.45;font-weight:400}
 .sheet .desc{color:rgba(15,36,23,.68)}
+#fulfil{margin:.9rem 0 .2rem}
+.segs{display:flex;gap:.4rem;background:rgba(15,36,23,.06);border-radius:100px;padding:3px}
+.segs button{flex:1 1 0;padding:.55rem .6rem;border-radius:100px;font-size:var(--t-6);font-weight:600;
+  color:rgba(15,36,23,.62);transition:background .3s var(--ease),color .3s var(--ease)}
+.segs button.on{background:var(--paper,#f7f2e6);color:var(--pine-deep,#122618);box-shadow:0 1px 3px rgba(3,8,5,.14)}
+.segs button[disabled]{opacity:.4}
+#addrWrap{margin-top:.6rem}
+#addrIn{width:100%;padding:.7rem .9rem;border-radius:14px;border:1px solid rgba(15,36,23,.22);
+  font:inherit;font-size:var(--t-5);background:#fff;color:var(--pine-deep,#122618)}
+#addrIn:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+#addrNote{margin:.4rem 0 0;font-size:var(--t-6)}
+#addrNote.bad{color:#a8321d}
 .nm .zh-main{font-family:"Noto Serif SC",serif}
 .sheet .nm .alt,.sheet .alt{color:rgba(15,36,23,.72)}
 .it .pr{color:var(--golds);font-weight:600;white-space:nowrap;font-size:var(--t-5)}
@@ -368,6 +380,13 @@ button.loc:active,a.loc:active{transform:scale(.99)}
     <button class="xclose" data-x="cartOv"></button>
     <h2 id="cartTitle" data-i="yourOrder"></h2>
     <div id="lines"></div>
+    <div id="fulfil" hidden>
+      <div class="segs" id="segs" role="group"></div>
+      <div id="addrWrap" hidden>
+        <input id="addrIn" type="text" autocomplete="street-address" enterkeyhint="done">
+        <p class="muted" id="addrNote"></p>
+      </div>
+    </div>
     <p class="notice" id="cartNotice" aria-live="polite" hidden></p>
     <div class="tot" id="totals" aria-live="polite"></div>
     <p class="muted" id="pickupOnly" data-i="pickupOnly"></p>
@@ -463,7 +482,7 @@ var STR={
   fName:"Enter your name",fPhone:"Enter your phone number",fEmail:"Enter a valid email",
   payNote:"Payment opens on Clover’s secure page — your card details never touch this site. You won’t be charged until you confirm there.",
   pickupAtLbl:"Pickup at",
-  notActive:"Online payment isn’t live yet at this kitchen. Call and we’ll take your order:",payFailed:"That payment didn’t go through. Please try again.",
+  notActive:"Online payment isn’t live yet at this kitchen. Call and we’ll take your order:",payFailed:"That payment didn’t go through. Please try again.",pickupTab:"Pickup",deliveryTab:"Delivery",addrPh:"Street address, Brooklyn, NY",addrHint:"We check the distance and route it to the nearest kitchen.",deliveryFee:"Delivery",freeDelivery:"Free delivery",deliverTo:"Delivering to",milesAway:"mi away",noDeliveryHere:"This kitchen is pickup only.",minShort:"Add {x} more for delivery.",tooFar:"That address is outside the delivery range.",addrBad:"We couldn’t find that address. Check the street and ZIP.",addrSlow:"Address lookup is busy. Try again in a moment.",
   call:"Call",priceChanged:"The kitchen updated its menu — totals refreshed, please review.",
   netErr:"Connection hiccup. Try again.",
   add:"Add",mi:"mi",km:"km",choose:"Choose an option",required:"required",
@@ -485,7 +504,7 @@ var STR={
   fName:"Укажите имя",fPhone:"Укажите номер телефона",fEmail:"Укажите корректный email",
   payNote:"Оплата пройдёт на защищённой странице Clover — данные карты не попадают на этот сайт. Списание — только после вашего подтверждения на странице оплаты.",
   pickupAtLbl:"Самовывоз:",
-  notActive:"Онлайн-оплата на этой кухне ещё не включена. Позвоните — примем заказ:",payFailed:"Платёж не прошёл. Попробуйте ещё раз.",
+  notActive:"Онлайн-оплата на этой кухне ещё не включена. Позвоните — примем заказ:",payFailed:"Платёж не прошёл. Попробуйте ещё раз.",pickupTab:"Самовывоз",deliveryTab:"Доставка",addrPh:"Улица и дом, Бруклин, NY",addrHint:"Проверим расстояние и отправим на ближайшую кухню.",deliveryFee:"Доставка",freeDelivery:"Доставка бесплатно",deliverTo:"Доставим по адресу",milesAway:"мили",noDeliveryHere:"Эта кухня работает только на самовывоз.",minShort:"Добавьте ещё на {x} — и доставим.",tooFar:"Этот адрес вне зоны доставки.",addrBad:"Не нашли такой адрес. Проверьте улицу и индекс.",addrSlow:"Поиск адреса занят. Попробуйте через секунду.",
   call:"Позвонить",priceChanged:"Кухня обновила меню — суммы пересчитаны, проверьте заказ.",
   netErr:"Сбой связи. Попробуйте ещё раз.",
   add:"Добавить",mi:"мили",km:"км",choose:"Выберите вариант",required:"обязательно",
@@ -507,7 +526,7 @@ var STR={
   fName:"请填写姓名",fPhone:"请填写电话号码",fEmail:"请填写有效邮箱",
   payNote:"将在 Clover 安全页面完成支付——银行卡信息不会经过本网站。只有您在该页面确认后才会扣款。",
   pickupAtLbl:"自取门店：",
-  notActive:"该门店的在线支付尚未开通。请致电下单：",payFailed:"支付未成功，请重试。",
+  notActive:"该门店的在线支付尚未开通。请致电下单：",payFailed:"支付未成功，请重试。",pickupTab:"自取",deliveryTab:"外送",addrPh:"街道地址，布鲁克林 NY",addrHint:"我们会计算距离并派给最近的门店。",deliveryFee:"外送费",freeDelivery:"免外送费",deliverTo:"送至",milesAway:"英里",noDeliveryHere:"该门店仅支持自取。",minShort:"再加 {x} 即可外送。",tooFar:"该地址不在外送范围内。",addrBad:"找不到该地址，请检查街道和邮编。",addrSlow:"地址查询繁忙，请稍后再试。",
   call:"拨打电话",priceChanged:"门店更新了菜单——金额已重新计算，请确认。",
   netErr:"网络不稳定，请重试。",
   add:"加入",mi:"英里",km:"公里",choose:"请选择",required:"必选",
@@ -539,7 +558,18 @@ function catNode(raw){
  w.appendChild(el("span",lang==="zh"?"zh-main":null,t));return w;
 }
 var state={slug:null,menu:null,cart:[],quote:null,quoteBusy:false,quoteErr:false,quoteFails:0,
-  cfg:null,idem:null};
+  cfg:null,idem:null,
+  /* how they want it and where to — the fee is decided by the server from
+     the address, never from anything the page computes */
+  mode:"pickup",addr:"",addrErr:""};
+/* which kitchens drive: mirrors the server, only to decide whether the
+   Delivery tab is worth offering. The server is the one that refuses. */
+var DELIVERS={"20th-ave":1,"coney-island":1};
+try{
+ var savedMode=localStorage.getItem("lx_mode");
+ if(savedMode==="delivery")state.mode="delivery";
+ state.addr=localStorage.getItem("lx_addr")||"";
+}catch(e){}
 var quoteSeq=0,quoteTimer=null,modCache={},lastTotal=null;
 
 function $(id){return document.getElementById(id)}
@@ -669,7 +699,7 @@ function applyLang(){
   b.setAttribute("aria-pressed",p[0]===lang?"true":"false");
   b.onclick=function(){lang=p[0];applyLang();setHdrVar();renderGate();setHdrVar();
    if(state.slug){renderMenuChrome();if(state.menu)renderMenu()}
-   ckMode=null;renderCart();updateBar();
+   ckMode=null;renderCart();updateBar();renderFulfil();
    var had=!!DMAP;
    ensureDmap().then(function(){if(!had&&DMAP&&state.slug&&state.menu)renderMenu()});};
   lb.appendChild(b);});
@@ -801,6 +831,9 @@ function pickKitchen(slug){
  var k=null;KITCHENS.forEach(function(x){if(x.slug===slug&&x.api)k=x});
  if(!k)return;
  state.slug=slug;
+ /* a kitchen that does not drive cannot stay on Delivery */
+ if(!DELIVERS[slug]){state.mode="pickup";state.addrErr="";
+  try{localStorage.setItem("lx_mode","pickup")}catch(e){}}
  try{localStorage.setItem("lx_kitchen",slug);localStorage.setItem("lx_region",k.region)}catch(e){}
  resetKitchenState();
  state.cart=loadCart();
@@ -1138,6 +1171,7 @@ document.addEventListener("keydown",function(e){
 });
 
 function renderCart(){
+ renderFulfil();
  var w=$("lines");w.innerHTML="";
  if(!state.cart.length){
   var e=el("div","cart-empty");
@@ -1183,14 +1217,79 @@ function renderTotals(){
    var c=el("div","muted");c.appendChild(document.createTextNode(T.orCall+" "));
    var a=el("a",null,k.phone);a.href="tel:"+k.tel;c.appendChild(a);t.appendChild(c);}
   syncPayBtn();return}
- [["subtotal",state.quote.subtotalCents],["tax",state.quote.taxCents]].forEach(function(p){
-  var d=el("div");d.appendChild(el("span",null,T[p[0]]));d.appendChild(el("span",null,money(p[1])));t.appendChild(d)});
+ var rows=[["subtotal",state.quote.subtotalCents]];
+ if(state.quote.delivery){
+  /* free is worth saying out loud — it is the reason they hit the minimum */
+  rows.push(["deliveryFee",state.quote.delivery.feeCents,
+   state.quote.delivery.feeCents?null:T.freeDelivery]);
+ }
+ rows.push(["tax",state.quote.taxCents]);
+ rows.forEach(function(p){
+  var d=el("div");d.appendChild(el("span",null,T[p[0]]));
+  d.appendChild(el("span",null,p[2]||money(p[1])));t.appendChild(d)});
  var g=el("div","g");g.appendChild(el("span",null,T.total));g.appendChild(el("span",null,money(state.quote.totalCents)));
  t.appendChild(g);
+ var po=$("pickupOnly");
+ if(po)po.hidden=!!(state.quote&&state.quote.delivery);
  syncPayBtn();
 }
 function flashTotals(){var t=$("totals");t.classList.remove("flash");void t.offsetWidth;t.classList.add("flash");
  t.scrollIntoView({block:"center",behavior:SMOOTH})}
+
+/* ---------- pickup or delivery ---------- */
+function deliveryOn(){return state.mode==="delivery"&&!!DELIVERS[state.slug]&&state.addr.length>7}
+function renderFulfil(){
+ var wrap=$("fulfil"),segs=$("segs"),aw=$("addrWrap"),ai=$("addrIn"),note=$("addrNote");
+ if(!wrap)return;
+ /* the choice only exists where a driver does */
+ if(!DELIVERS[state.slug]){wrap.hidden=true;state.mode="pickup";return}
+ wrap.hidden=!state.cart.length;
+ segs.innerHTML="";
+ [["pickup",T.pickupTab],["delivery",T.deliveryTab]].forEach(function(p){
+  var b=el("button",state.mode===p[0]?"on":null,p[1]);b.type="button";
+  b.setAttribute("aria-pressed",state.mode===p[0]?"true":"false");
+  b.onclick=function(){
+   if(state.mode===p[0])return;
+   state.mode=p[0];state.addrErr="";
+   try{localStorage.setItem("lx_mode",state.mode)}catch(e){}
+   renderFulfil();requestQuote(true);
+  };
+  segs.appendChild(b);
+ });
+ aw.hidden=state.mode!=="delivery";
+ ai.placeholder=T.addrPh;
+ ai.setAttribute("aria-label",T.addrPh);
+ if(document.activeElement!==ai)ai.value=state.addr;
+ note.className="muted"+(state.addrErr?" bad":"");
+ note.textContent=state.addrErr
+  ||(state.quote&&state.quote.delivery
+     ? T.deliverTo+": "+state.quote.delivery.address+" · "+state.quote.delivery.miles+" "+T.milesAway
+     : T.addrHint);
+}
+var addrTimer=null;
+function bindAddress(){
+ var ai=$("addrIn");if(!ai)return;
+ ai.addEventListener("input",function(){
+  state.addr=ai.value.trim();state.addrErr="";
+  try{localStorage.setItem("lx_addr",state.addr)}catch(e){}
+  clearTimeout(addrTimer);
+  /* wait for them to stop typing: every keystroke would be a geocode */
+  addrTimer=setTimeout(function(){requestQuote(true)},700);
+ });
+ ai.addEventListener("keydown",function(e){
+  if(e.key==="Enter"){e.preventDefault();ai.blur();clearTimeout(addrTimer);requestQuote(true)}
+ });
+}
+/* the server names exactly why it will not deliver; say it in their language */
+function deliveryProblem(j){
+ if(!j)return "";
+ if(j.code==="BELOW_MINIMUM")return T.minShort.replace("{x}",money(j.shortCents||0));
+ if(j.code==="OUT_OF_RANGE")return T.tooFar;
+ if(j.code==="ADDRESS_NOT_FOUND"||j.code==="ADDRESS_TOO_SHORT")return T.addrBad;
+ if(j.code==="GEOCODER_UNAVAILABLE")return T.addrSlow;
+ if(j.code==="DELIVERY_NOT_OFFERED")return T.noDeliveryHere;
+ return "";
+}
 
 function requestQuote(now){
  if(!state.cart.length){state.quote=null;state.idem=null;state.quoteErr=false;renderTotals();updateBar();return}
@@ -1201,14 +1300,23 @@ function requestQuote(now){
  var seq=++quoteSeq;
  quoteTimer=setTimeout(function(){
   tfetch(API+"/api/quotes",{method:"POST",headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({locationSlug:state.slug,fulfillment:"pickup",
+   body:JSON.stringify({locationSlug:state.slug,fulfillment:deliveryOn()?"delivery":"pickup",
+    deliveryAddress:deliveryOn()?state.addr:undefined,
     cart:state.cart.map(function(l){return{itemId:l.itemId,quantity:l.quantity,modifierIds:l.modifierIds}})})})
   .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j}})})
   .then(function(res){
    if(seq!==quoteSeq)return;
    state.quoteBusy=false;
-   if(res.ok){state.quote=res.j;lastTotal=res.j.totalCents;state.quoteFails=0;$("cartErr").textContent=""}
+   if(res.ok){state.quote=res.j;lastTotal=res.j.totalCents;state.quoteFails=0;
+    state.addrErr="";$("cartErr").textContent="";renderFulfil()}
    else{
+    var dp=deliveryProblem(res.j);
+    if(dp){
+     /* not a broken cart — a delivery the kitchen will not make yet */
+     state.quoteErr=false;state.quoteBusy=false;state.quote=null;
+     state.addrErr=dp;$("cartErr").textContent="";
+     renderFulfil();renderTotals();updateBar();return;
+    }
     state.quoteErr=true;state.quoteFails++;
     /* an item may have left today's menu — refresh menu + prune, then the
        user can retry against the pruned cart */
@@ -1364,6 +1472,7 @@ window.addEventListener("pageshow",function(e){
  state.idem=null;
  if(!state.slug)return;
  state.cart=loadCart();
+ bindAddress();
  renderCart();updateBar();
  if(state.cart.length){requestQuote(true)}
  else{state.quote=null;lastTotal=null;
