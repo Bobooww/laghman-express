@@ -383,8 +383,14 @@
         clearTimeout(idle);
         idle = setTimeout(function () { paused = false; }, 9000);
       }
-      rail.addEventListener("pointerenter", function () { paused = true; });
-      rail.addEventListener("pointerleave", function () { paused = false; });
+      /* only a mouse gets the open-ended pause: a touch fires pointerenter
+         without a matching pointerleave, which would park the rail for good */
+      rail.addEventListener("pointerenter", function (e) {
+        if (!e.pointerType || e.pointerType === "mouse") paused = true;
+      });
+      rail.addEventListener("pointerleave", function (e) {
+        if (!e.pointerType || e.pointerType === "mouse") paused = false;
+      });
       rail.addEventListener("pointerdown", hold);
       rail.addEventListener("wheel", hold, { passive: true });
       rail.addEventListener("touchstart", hold, { passive: true });
