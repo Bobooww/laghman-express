@@ -1575,7 +1575,6 @@ window.addEventListener("pageshow",function(e){
  state.idem=null;
  if(!state.slug)return;
  state.cart=loadCart();
- bindAddress();
  renderCart();updateBar();
  if(state.cart.length){requestQuote(true)}
  else{state.quote=null;lastTotal=null;
@@ -1587,6 +1586,9 @@ function setHdrVar(){var hd=document.querySelector(".hdr");
  if(hd)document.documentElement.style.setProperty("--hdrh",Math.round(hd.getBoundingClientRect().height)+"px")}
 window.addEventListener("resize",setHdrVar);setHdrVar();
 applyLang();renderGate();setHdrVar();
+/* the address field is static markup, so one binding at boot serves every
+   time the cart is opened */
+bindAddress();
 var saved=null;try{saved=localStorage.getItem("lx_kitchen")}catch(e){}
 var qk=new URLSearchParams(location.search).get("k");
 function orderable(slug){for(var i=0;i<KITCHENS.length;i++)if(KITCHENS[i].slug===slug&&KITCHENS[i].api)return KITCHENS[i];return null}
