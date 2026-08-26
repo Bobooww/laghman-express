@@ -302,6 +302,112 @@
     }
   })();
 
+  /* The dish rail carries arrows; the clips rail was left without them, and
+     the client wants both to drift on their own. Both live here rather than
+     in the React bundle so a stale cached chunk still gets the behaviour. */
+  function rails() {
+    var CREEP = 4200; /* long enough to read a card before it moves */
+    var slow = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!document.getElementById("lx-rail-css")) {
+      var st = document.createElement("style");
+      st.id = "lx-rail-css";
+      /* the clips rail sits on pine, where the paper-section border disappears */
+      st.textContent =
+        ".feed .railnav button{border-color:rgba(246,241,228,.34);color:var(--cream,#f6f1e4)}" +
+        ".feed .railnav button:hover{background:var(--paper,#f7f2e6);color:#122618;border-color:var(--paper,#f7f2e6)}" +
+        /* the head only becomes a row at 900px, where the arrows also appear;
+           below that it stacks and must keep its single column */
+        "@media (min-width:900px){.lx-hasnav{grid-template-columns:1fr auto auto}}";
+      document.head.appendChild(st);
+    }
+
+    function arrow(dir, label) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "lx-railbtn";
+      b.setAttribute("aria-label", label);
+      b.textContent = dir < 0 ? "←" : "→";
+      return b;
+    }
+
+    function step(rail, dir) {
+      var by = Math.max(220, rail.clientWidth * 0.7);
+      var end = rail.scrollWidth - rail.clientWidth - 4;
+      /* wrap instead of stalling at the ends — the client asked for a loop */
+      if (dir > 0 && rail.scrollLeft >= end) rail.scrollTo({ left: 0, behavior: "smooth" });
+      else if (dir < 0 && rail.scrollLeft <= 4) rail.scrollTo({ left: end, behavior: "smooth" });
+      else rail.scrollBy({ left: dir * by, behavior: "smooth" });
+    }
+
+    function equip(rail) {
+      if (rail.dataset.lxRail === "1") return;
+      rail.dataset.lxRail = "1";
+      var sec = rail.closest ? rail.closest("section") : null;
+      var head = sec && sec.querySelector(".sec__head--row");
+
+      /* the clips rail has no nav of its own — give it the same pair */
+      if (head && !head.querySelector(".railnav") && !head.querySelector(".lx-railnav")) {
+        var nav = document.createElement("div");
+        nav.className = "railnav lx-railnav";
+        var prev = arrow(-1, "Previous");
+        var next = arrow(1, "Next");
+        prev.onclick = function () { hold(); step(rail, -1); };
+        next.onclick = function () { hold(); step(rail, 1); };
+        nav.appendChild(prev);
+        nav.appendChild(next);
+        /* the head is a two-column grid (copy | action); a third child would
+           drop to its own row, so open a column and sit beside the action */
+        var action = head.lastElementChild;
+        head.classList.add("lx-hasnav");
+        head.insertBefore(nav, action);
+      }
+
+      if (slow) return;
+
+      var paused = false, idle = null;
+      /* asking the rail where it is beats an IntersectionObserver here: one
+         cheap rect read every few seconds, and no way to end up with a rail
+         that never drifts because the observer never reported it */
+      function onScreen() {
+        var r = rail.getBoundingClientRect();
+        return r.bottom > 0 && r.top < (window.innerHeight || document.documentElement.clientHeight);
+      }
+      function tick() {
+        if (paused || document.visibilityState !== "visible" || !onScreen()) return;
+        step(rail, 1);
+      }
+      /* a person touching the rail owns it — drift resumes once they stop */
+      function hold() {
+        paused = true;
+        clearTimeout(idle);
+        idle = setTimeout(function () { paused = false; }, 9000);
+      }
+      rail.addEventListener("pointerenter", function () { paused = true; });
+      rail.addEventListener("pointerleave", function () { paused = false; });
+      rail.addEventListener("pointerdown", hold);
+      rail.addEventListener("wheel", hold, { passive: true });
+      rail.addEventListener("touchstart", hold, { passive: true });
+      rail.addEventListener("focusin", hold);
+
+      setInterval(tick, CREEP);
+    }
+
+    [].forEach.call(document.querySelectorAll(".rail"), equip);
+  }
+
+  function railsWatch() {
+    rails();
+    /* a language switch rebuilds these sections — re-equip whatever React
+       hands back (equip() is a no-op on a rail it already owns) */
+    if (!("MutationObserver" in window)) return;
+    var pending = null;
+    new MutationObserver(function () {
+      clearTimeout(pending);
+      pending = setTimeout(rails, 200);
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
   function boot() {
     /* the craft section is retired (client 2026-08-22): stop its videos, drop the node */
     /* the NYT section takes the dark cloth; its stylesheet resists a head
@@ -326,6 +432,7 @@
     lxRecognition();
     setTimeout(lxRecognition, 1500); /* hydration may rebuild the section after us */
     setTimeout(lxRecognition, 4000);
+    railsWatch();
     /* the current hero film is generation d; phones get the lighter cut.
        swapping here (not only in the page chunk) also carries users whose
        cached chunk still points at an older generation */
