@@ -306,7 +306,8 @@
      the client wants both to drift on their own. Both live here rather than
      in the React bundle so a stale cached chunk still gets the behaviour. */
   function rails() {
-    var CREEP = 4200; /* long enough to read a card before it moves */
+    var CREEP = 2600; /* brisk enough that the motion reads at a glance */
+    var FIRST = 900;  /* and the first move lands while they are still looking */
     var slow = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (!document.getElementById("lx-rail-css")) {
@@ -316,9 +317,12 @@
       st.textContent =
         ".feed .railnav button{border-color:rgba(246,241,228,.34);color:var(--cream,#f6f1e4)}" +
         ".feed .railnav button:hover{background:var(--paper,#f7f2e6);color:#122618;border-color:var(--paper,#f7f2e6)}" +
-        /* the head only becomes a row at 900px, where the arrows also appear;
-           below that it stacks and must keep its single column */
-        "@media (min-width:900px){.lx-hasnav{grid-template-columns:1fr auto auto}}";
+        /* the head only becomes a row at 900px; below that it stacks and must
+           keep its single column */
+        "@media (min-width:900px){.lx-hasnav{grid-template-columns:1fr auto auto}}" +
+        /* the stylesheet hides these under 900px — but the client wants the
+           arrows on the clips rail everywhere, so phones get them too */
+        "@media (max-width:899px){.railnav{display:flex}.lx-hasnav .railnav{justify-content:flex-start}}";
       document.head.appendChild(st);
     }
 
@@ -396,6 +400,7 @@
       rail.addEventListener("touchstart", hold, { passive: true });
       rail.addEventListener("focusin", hold);
 
+      setTimeout(tick, FIRST);
       setInterval(tick, CREEP);
     }
 
