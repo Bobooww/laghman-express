@@ -231,6 +231,7 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 #addrNote{margin:.4rem 0 0;font-size:var(--t-6)}
 #addrNote.bad{color:#a8321d}
 #addrTerms{margin:.3rem 0 0;font-size:var(--t-7);color:rgba(15,36,23,.55)}
+.tot .stale{opacity:.45;transition:opacity .3s var(--ease)}
 .addr-field{position:relative}
 #addrList{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;margin:0;padding:.25rem;
   list-style:none;background:#fff;border:1px solid rgba(15,36,23,.16);border-radius:14px;
@@ -840,6 +841,7 @@ $("geoBtn").onclick=function(){
 
 /* ---- menu ---- */
 function resetKitchenState(){
+ lastQuote=null;
  state.menu=null;state.quote=null;state.idem=null;state.cfg=null;
  state.quoteBusy=false;state.quoteErr=false;state.quoteFails=0;
  ckMode=null;modCache={};lastTotal=null;
@@ -1228,6 +1230,10 @@ function renderTotals(){
      already spelled out under the address field */
   t.appendChild(el("div","muted",state.deliveryBlocked));syncPayBtn();return}
  if(state.quoteBusy||(!state.quote&&!state.quoteErr)){
+  if(lastQuote&&lastQuote.items&&lastQuote.items.length){
+   drawTotals(lastQuote,true);
+   t.appendChild(el("div","muted",T.quoteWait));
+   syncPayBtn();return}
   t.appendChild(el("div","muted",T.quoteWait));syncPayBtn();return}
  if(state.quoteErr){
   t.appendChild(el("div","muted",T.quoteFail));
@@ -1240,21 +1246,27 @@ function renderTotals(){
    var c=el("div","muted");c.appendChild(document.createTextNode(T.orCall+" "));
    var a=el("a",null,k.phone);a.href="tel:"+k.tel;c.appendChild(a);t.appendChild(c);}
   syncPayBtn();return}
- var rows=[["subtotal",state.quote.subtotalCents]];
- if(state.quote.delivery){
-  /* free is worth saying out loud — it is the reason they hit the minimum */
-  rows.push(["deliveryFee",state.quote.delivery.feeCents,
-   state.quote.delivery.feeCents?null:T.freeDelivery]);
- }
- rows.push(["tax",state.quote.taxCents]);
- rows.forEach(function(p){
-  var d=el("div");d.appendChild(el("span",null,T[p[0]]));
-  d.appendChild(el("span",null,p[2]||money(p[1])));t.appendChild(d)});
- var g=el("div","g");g.appendChild(el("span",null,T.total));g.appendChild(el("span",null,money(state.quote.totalCents)));
- t.appendChild(g);
+ drawTotals(state.quote,false);
  var po=$("pickupOnly");
  if(po)po.hidden=!!(state.quote&&state.quote.delivery);
  syncPayBtn();
+}
+function drawTotals(q,stale){
+ var t=$("totals");
+ var rows=[["subtotal",q.subtotalCents]];
+ if(q.delivery){
+  /* free is worth saying out loud — it is the reason they hit the minimum */
+  rows.push(["deliveryFee",q.delivery.feeCents,q.delivery.feeCents?null:T.freeDelivery]);
+ }
+ rows.push(["tax",q.taxCents]);
+ rows.forEach(function(p){
+  var d=el("div",stale?"stale":null);
+  d.appendChild(el("span",null,T[p[0]]));
+  d.appendChild(el("span",null,p[2]||money(p[1])));t.appendChild(d)});
+ var g=el("div","g"+(stale?" stale":""));
+ g.appendChild(el("span",null,T.total));
+ g.appendChild(el("span",null,money(q.totalCents)));
+ t.appendChild(g);
 }
 function flashTotals(){var t=$("totals");t.classList.remove("flash");void t.offsetWidth;t.classList.add("flash");
  t.scrollIntoView({block:"center",behavior:SMOOTH})}
@@ -1305,6 +1317,9 @@ function cartSubtotal(){
  return state.cart.reduce(function(sum,l){return sum+(l.unitCents||0)*l.quantity},0);
 }
 var addrTimer=null,sugTimer=null,sugSeq=0,sugItems=[],sugIdx=-1;
+/* the last numbers we showed, kept so a re-check does not blank the panel
+   the customer is reading — the pay button stays the guarded control */
+var lastQuote=null;
 function closeSug(){
  var l=$("addrList");if(!l)return;
  l.hidden=true;l.innerHTML="";sugItems=[];sugIdx=-1;
@@ -1389,7 +1404,7 @@ function deliveryProblem(j){
 }
 
 function requestQuote(now){
- if(!state.cart.length){state.quote=null;state.idem=null;state.quoteErr=false;renderTotals();updateBar();return}
+ if(!state.cart.length){state.quote=null;lastQuote=null;state.idem=null;state.quoteErr=false;renderTotals();updateBar();return}
  /* invalidate immediately: nothing may pay against a stale quote */
  state.quote=null;state.idem=null;state.quoteBusy=true;state.quoteErr=false;state.deliveryBlocked="";
  renderTotals();updateBar();
@@ -1404,7 +1419,7 @@ function requestQuote(now){
   .then(function(res){
    if(seq!==quoteSeq)return;
    state.quoteBusy=false;
-   if(res.ok){state.quote=res.j;lastTotal=res.j.totalCents;state.quoteFails=0;
+   if(res.ok){state.quote=res.j;lastTotal=res.j.totalCents;lastQuote=res.j;state.quoteFails=0;
     state.addrErr="";state.deliveryBlocked="";$("cartErr").textContent="";renderFulfil()}
    else{
     var dp=deliveryProblem(res.j);
