@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="robots" content="index, follow">
-<title>Order Pickup — Laghman Express | Brooklyn &amp; Alpharetta</title>
-<meta name="description" content="Order hand-pulled laghman noodles for pickup — live menu and prices straight from each kitchen's register. Brooklyn: 20th Ave and Coney Island Ave.">
+<title>Order Online — Laghman Express | Brooklyn &amp; Alpharetta</title>
+<meta name="description" content="Order hand-pulled laghman noodles online — live menu and prices straight from each kitchen's register. Pickup at every kitchen, delivery from 20th Ave and Coney Island Ave.">
 <link rel="canonical" href="https://bobooww.github.io/laghman-express/order">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Laghman Express">
-<meta property="og:title" content="Order pickup — Laghman Express">
-<meta property="og:description" content="Live menu and prices straight from the kitchen's register. Hand-pulled noodles, ready for pickup.">
+<meta property="og:title" content="Order online — Laghman Express">
+<meta property="og:description" content="Live menu and prices straight from the kitchen's register. Hand-pulled noodles, for pickup or delivery.">
 <meta property="og:url" content="https://bobooww.github.io/laghman-express/order">
 <meta property="og:image" content="https://bobooww.github.io/laghman-express/assets/og-card.jpg">
 <meta property="og:image:width" content="1200">
@@ -20,7 +20,7 @@
 <meta property="og:locale:alternate" content="ru_RU">
 <meta property="og:locale:alternate" content="zh_CN">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Order pickup — Laghman Express">
+<meta name="twitter:title" content="Order online — Laghman Express">
 <meta name="twitter:description" content="Live menu and prices straight from the kitchen's register.">
 <meta name="twitter:image" content="https://bobooww.github.io/laghman-express/assets/og-card.jpg">
 <meta name="theme-color" content="#0b120e">
@@ -230,6 +230,16 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 #addrIn:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 #addrNote{margin:.4rem 0 0;font-size:var(--t-6)}
 #addrNote.bad{color:#a8321d}
+#addrTerms{margin:.3rem 0 0;font-size:var(--t-7);color:rgba(15,36,23,.55)}
+.addr-field{position:relative}
+#addrList{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;margin:0;padding:.25rem;
+  list-style:none;background:#fff;border:1px solid rgba(15,36,23,.16);border-radius:14px;
+  box-shadow:0 12px 28px -10px rgba(3,8,5,.32);max-height:230px;overflow:auto}
+#addrList li{padding:.55rem .7rem;border-radius:10px;font-size:var(--t-6);cursor:pointer;
+  color:var(--pine-deep,#122618)}
+#addrList li[aria-selected="true"],#addrList li:hover{background:rgba(15,36,23,.07)}
+#addrList li b{font-weight:600}
+#addrIn.busy{background-image:none}
 .nm .zh-main{font-family:"Noto Serif SC",serif}
 .sheet .nm .alt,.sheet .alt{color:rgba(15,36,23,.72)}
 .it .pr{color:var(--golds);font-weight:600;white-space:nowrap;font-size:var(--t-5)}
@@ -383,8 +393,14 @@ button.loc:active,a.loc:active{transform:scale(.99)}
     <div id="fulfil" hidden>
       <div class="segs" id="segs" role="group"></div>
       <div id="addrWrap" hidden>
-        <input id="addrIn" type="text" autocomplete="street-address" enterkeyhint="done">
+        <div class="addr-field">
+          <input id="addrIn" type="text" autocomplete="off" autocapitalize="words"
+                 spellcheck="false" enterkeyhint="search" role="combobox"
+                 aria-expanded="false" aria-autocomplete="list" aria-controls="addrList">
+          <ul id="addrList" role="listbox" hidden></ul>
+        </div>
         <p class="muted" id="addrNote"></p>
+        <p class="muted" id="addrTerms"></p>
       </div>
     </div>
     <p class="notice" id="cartNotice" aria-live="polite" hidden></p>
@@ -472,7 +488,7 @@ var STR={
   nearMe:"Find the nearest kitchen",locating:"Locating…",geoNo:"Location unavailable — pick a kitchen below.",zipPh:"ZIP code",zipGo:"Go",zipNo:"We don’t recognize that ZIP — pick a kitchen below.",zipShort:"Enter all five digits and we’ll match your kitchen.",
   orderHere:"Order here",phoneOnly:"Phone orders",comingSoon:"Opening soon",nearest:"Nearest kitchen",
   alsoIn:"Also in",switchKitchen:"switch kitchen",
-  liveNote:"Live menu and prices from this kitchen’s register. Pickup only for now.",
+  liveNote:"Live menu and prices from this kitchen’s register.",
   loading:"Loading the menu…",menuFail:"The menu is taking a break.",retry:"Try again",orCall:"or call",
   cart:"Your order",yourOrder:"Your order",empty:"Nothing here yet.",browseMenu:"Browse the menu",subtotal:"Subtotal",tax:"Tax",total:"Total",
   item1:"item",itemN:"items",
@@ -482,19 +498,19 @@ var STR={
   fName:"Enter your name",fPhone:"Enter your phone number",fEmail:"Enter a valid email",
   payNote:"Payment opens on Clover’s secure page — your card details never touch this site. You won’t be charged until you confirm there.",
   pickupAtLbl:"Pickup at",
-  notActive:"Online payment isn’t live yet at this kitchen. Call and we’ll take your order:",payFailed:"That payment didn’t go through. Please try again.",pickupTab:"Pickup",deliveryTab:"Delivery",addrPh:"Street address, Brooklyn, NY",addrHint:"We check the distance and route it to the nearest kitchen.",deliveryFee:"Delivery",freeDelivery:"Free",deliverTo:"Delivering to",milesAway:"mi away",noDeliveryHere:"This kitchen is pickup only.",minShort:"Add {x} more for delivery.",tooFar:"That address is outside the delivery range.",addrBad:"We couldn’t find that address. Check the street and ZIP.",addrSlow:"Address lookup is busy. Try again in a moment.",
+  notActive:"Online payment isn’t live yet at this kitchen. Call and we’ll take your order:",payFailed:"That payment didn’t go through. Please try again.",pickupTab:"Pickup",deliveryTab:"Delivery",addrPh:"Street address, Brooklyn, NY",addrHint:"We check the distance and route it to the nearest kitchen.",deliveryFee:"Delivery",freeDelivery:"Free",deliverTo:"Delivering to",milesAway:"mi away",noDeliveryHere:"This kitchen is pickup only.",minShort:"Add {x} more for delivery.",tooFar:"That address is outside the delivery range.",addrBad:"We couldn’t find that address. Check the street and ZIP.",addrSlow:"Address lookup is busy. Try again in a moment.",freeWithin:"Free within {m} mi",fromAmount:"from {x}",thenFee:"then {x} to {m} mi",
   call:"Call",priceChanged:"The kitchen updated its menu — totals refreshed, please review.",
   netErr:"Connection hiccup. Try again.",
   add:"Add",mi:"mi",km:"km",choose:"Choose an option",required:"required",
   tooMany:"Choose at most {n}",close:"Close",qtyUp:"Add one more",qtyDown:"Remove one",
   closedNow:"The kitchen is closed right now — opens at {t}. You’re welcome to browse the menu meanwhile.",
-  langLbl:"Language",docTitle:"Order Pickup — Laghman Express | Brooklyn & Alpharetta"},
+  langLbl:"Language",docTitle:"Order Online — Laghman Express | Brooklyn & Alpharetta"},
  ru:{back:"На сайт",gateH1:"Выберите кухню.",
   gateSub:"У каждой кухни своё меню и свои цены — сегодняшнее меню приходит прямо с кассы.",
   nearMe:"Найти ближайшую кухню",locating:"Определяем…",geoNo:"Геолокация недоступна — выберите кухню ниже.",zipPh:"ZIP-код",zipGo:"ОК",zipNo:"Не узнали этот ZIP — выберите кухню ниже.",zipShort:"Введите все пять цифр — подберём кухню.",
   orderHere:"Заказать здесь",phoneOnly:"Заказ по телефону",comingSoon:"Скоро открытие",nearest:"Ближайшая кухня",
   alsoIn:"Ещё локации:",switchKitchen:"сменить кухню",
-  liveNote:"Живое меню и цены с кассы этой кухни. Пока только самовывоз.",
+  liveNote:"Живое меню и цены с кассы этой кухни.",
   loading:"Загружаем меню…",menuFail:"Меню отдыхает.",retry:"Попробовать ещё раз",orCall:"или позвоните",
   cart:"Ваш заказ",yourOrder:"Ваш заказ",empty:"Пока пусто.",browseMenu:"Посмотреть меню",subtotal:"Сумма",tax:"Налог",total:"Итого",
   item1:"позиция",item2:"позиции",itemN:"позиций",
@@ -504,19 +520,19 @@ var STR={
   fName:"Укажите имя",fPhone:"Укажите номер телефона",fEmail:"Укажите корректный email",
   payNote:"Оплата пройдёт на защищённой странице Clover — данные карты не попадают на этот сайт. Списание — только после вашего подтверждения на странице оплаты.",
   pickupAtLbl:"Самовывоз:",
-  notActive:"Онлайн-оплата на этой кухне ещё не включена. Позвоните — примем заказ:",payFailed:"Платёж не прошёл. Попробуйте ещё раз.",pickupTab:"Самовывоз",deliveryTab:"Доставка",addrPh:"Улица и дом, Бруклин, NY",addrHint:"Проверим расстояние и отправим на ближайшую кухню.",deliveryFee:"Доставка",freeDelivery:"Бесплатно",deliverTo:"Доставим по адресу",milesAway:"мили",noDeliveryHere:"Эта кухня работает только на самовывоз.",minShort:"Добавьте ещё на {x} — и доставим.",tooFar:"Этот адрес вне зоны доставки.",addrBad:"Не нашли такой адрес. Проверьте улицу и индекс.",addrSlow:"Поиск адреса занят. Попробуйте через секунду.",
+  notActive:"Онлайн-оплата на этой кухне ещё не включена. Позвоните — примем заказ:",payFailed:"Платёж не прошёл. Попробуйте ещё раз.",pickupTab:"Самовывоз",deliveryTab:"Доставка",addrPh:"Улица и дом, Бруклин, NY",addrHint:"Проверим расстояние и отправим на ближайшую кухню.",deliveryFee:"Доставка",freeDelivery:"Бесплатно",deliverTo:"Доставим по адресу",milesAway:"мили",noDeliveryHere:"Эта кухня работает только на самовывоз.",minShort:"Добавьте ещё на {x} — и доставим.",tooFar:"Этот адрес вне зоны доставки.",addrBad:"Не нашли такой адрес. Проверьте улицу и индекс.",addrSlow:"Поиск адреса занят. Попробуйте через секунду.",freeWithin:"Бесплатно до {m} миль",fromAmount:"от {x}",thenFee:"далее {x} до {m} миль",
   call:"Позвонить",priceChanged:"Кухня обновила меню — суммы пересчитаны, проверьте заказ.",
   netErr:"Сбой связи. Попробуйте ещё раз.",
   add:"Добавить",mi:"мили",km:"км",choose:"Выберите вариант",required:"обязательно",
   tooMany:"Не больше {n}",close:"Закрыть",qtyUp:"Добавить ещё",qtyDown:"Убрать одну",
   closedNow:"Кухня сейчас закрыта — откроется в {t}. Меню можно посмотреть уже сейчас.",
-  langLbl:"Язык",docTitle:"Заказ на самовывоз — Laghman Express"},
+  langLbl:"Язык",docTitle:"Заказ онлайн — Laghman Express"},
  zh:{back:"返回主页",gateH1:"选择门店。",
   gateSub:"每家门店都有自己的菜单和价格——今日菜单直接来自门店收银系统。",
   nearMe:"查找最近的门店",locating:"定位中…",geoNo:"无法获取位置——请在下方选择门店。",zipPh:"邮编",zipGo:"确定",zipNo:"无法识别该邮编——请在下方选择门店。",zipShort:"请输入完整的五位邮编，我们会为您匹配门店。",
   orderHere:"在线点餐",phoneOnly:"电话点餐",comingSoon:"即将开业",nearest:"离您最近",
   alsoIn:"其他地区门店：",switchKitchen:"换一家门店",
-  liveNote:"实时菜单与价格，直接来自该门店收银系统。目前仅支持自取。",
+  liveNote:"实时菜单与价格，直接来自该门店收银系统。",
   loading:"菜单加载中…",menuFail:"菜单开小差了。",retry:"再试一次",orCall:"或致电",
   cart:"我的订单",yourOrder:"我的订单",empty:"还没有添加菜品。",browseMenu:"去看菜单",subtotal:"小计",tax:"税费",total:"合计",
   item1:"份",itemN:"份",
@@ -526,7 +542,7 @@ var STR={
   fName:"请填写姓名",fPhone:"请填写电话号码",fEmail:"请填写有效邮箱",
   payNote:"将在 Clover 安全页面完成支付——银行卡信息不会经过本网站。只有您在该页面确认后才会扣款。",
   pickupAtLbl:"自取门店：",
-  notActive:"该门店的在线支付尚未开通。请致电下单：",payFailed:"支付未成功，请重试。",pickupTab:"自取",deliveryTab:"外送",addrPh:"街道地址，布鲁克林 NY",addrHint:"我们会计算距离并派给最近的门店。",deliveryFee:"外送费",freeDelivery:"免费",deliverTo:"送至",milesAway:"英里",noDeliveryHere:"该门店仅支持自取。",minShort:"再加 {x} 即可外送。",tooFar:"该地址不在外送范围内。",addrBad:"找不到该地址，请检查街道和邮编。",addrSlow:"地址查询繁忙，请稍后再试。",
+  notActive:"该门店的在线支付尚未开通。请致电下单：",payFailed:"支付未成功，请重试。",pickupTab:"自取",deliveryTab:"外送",addrPh:"街道地址，布鲁克林 NY",addrHint:"我们会计算距离并派给最近的门店。",deliveryFee:"外送费",freeDelivery:"免费",deliverTo:"送至",milesAway:"英里",noDeliveryHere:"该门店仅支持自取。",minShort:"再加 {x} 即可外送。",tooFar:"该地址不在外送范围内。",addrBad:"找不到该地址，请检查街道和邮编。",addrSlow:"地址查询繁忙，请稍后再试。",freeWithin:"{m} 英里内免费",fromAmount:"满 {x} 起送",thenFee:"{m} 英里内加收 {x}",
   call:"拨打电话",priceChanged:"门店更新了菜单——金额已重新计算，请确认。",
   netErr:"网络不稳定，请重试。",
   add:"加入",mi:"英里",km:"公里",choose:"请选择",required:"必选",
@@ -564,7 +580,10 @@ var state={slug:null,menu:null,cart:[],quote:null,quoteBusy:false,quoteErr:false
   mode:"pickup",addr:"",addrErr:"",deliveryBlocked:""};
 /* which kitchens drive: mirrors the server, only to decide whether the
    Delivery tab is worth offering. The server is the one that refuses. */
-var DELIVERS={"20th-ave":1,"coney-island":1};
+var DELIVERS={
+ "20th-ave":{min:3500,freeMiles:2,maxMiles:3,feeCents:500},
+ "coney-island":{min:4000,freeMiles:2,maxMiles:2,feeCents:0}
+};
 try{
  var savedMode=localStorage.getItem("lx_mode");
  if(savedMode==="delivery")state.mode="delivery";
@@ -1269,20 +1288,91 @@ function renderFulfil(){
   ||(state.quote&&state.quote.delivery
      ? T.deliverTo+": "+state.quote.delivery.address+" · "+state.quote.delivery.miles+" "+T.milesAway
      : T.addrHint);
+ /* the terms up front: what it takes and how far, before they type anything */
+ var terms=$("addrTerms"),d=DELIVERS[state.slug];
+ if(terms&&d){
+  var parts=[T.freeWithin.replace("{m}",d.freeMiles),T.fromAmount.replace("{x}",money(d.min))];
+  if(d.maxMiles>d.freeMiles)parts.push(T.thenFee.replace("{x}",money(d.feeCents)).replace("{m}",d.maxMiles));
+  terms.textContent=parts.join(" · ");
+  /* how much more food gets them over the line */
+  var sub=state.quote?state.quote.subtotalCents:cartSubtotal();
+  if(sub>0&&sub<d.min&&!state.addrErr)
+   terms.textContent=T.minShort.replace("{x}",money(d.min-sub))+" "+terms.textContent;
+ } else if(terms) terms.textContent="";
 }
-var addrTimer=null;
+/* the cart's own arithmetic, for the moments before a quote exists */
+function cartSubtotal(){
+ return state.cart.reduce(function(sum,l){return sum+(l.unitCents||0)*l.quantity},0);
+}
+var addrTimer=null,sugTimer=null,sugSeq=0,sugItems=[],sugIdx=-1;
+function closeSug(){
+ var l=$("addrList");if(!l)return;
+ l.hidden=true;l.innerHTML="";sugItems=[];sugIdx=-1;
+ var ai=$("addrIn");if(ai)ai.setAttribute("aria-expanded","false");
+}
+function renderSug(){
+ var l=$("addrList"),ai=$("addrIn");if(!l||!ai)return;
+ if(!sugItems.length){closeSug();return}
+ l.innerHTML="";
+ sugItems.forEach(function(sug,i){
+  var li=el("li",null,null);
+  li.setAttribute("role","option");
+  li.setAttribute("aria-selected",i===sugIdx?"true":"false");
+  /* show what they typed in bold so the eye lands on the difference */
+  var typed=ai.value.trim().toLowerCase();
+  var at=sug.label.toLowerCase().indexOf(typed);
+  if(typed&&at===0){
+   li.appendChild(el("b",null,sug.label.slice(0,typed.length)));
+   li.appendChild(document.createTextNode(sug.label.slice(typed.length)));
+  } else li.appendChild(document.createTextNode(sug.label));
+  /* mousedown, not click: blur would close the list first */
+  li.addEventListener("mousedown",function(e){e.preventDefault();chooseSug(i)});
+  l.appendChild(li);
+ });
+ l.hidden=false;ai.setAttribute("aria-expanded","true");
+}
+function chooseSug(i){
+ var sug=sugItems[i];if(!sug)return;
+ var ai=$("addrIn");
+ ai.value=sug.label;state.addr=sug.label;state.addrErr="";
+ try{localStorage.setItem("lx_addr",state.addr)}catch(e){}
+ closeSug();clearTimeout(addrTimer);requestQuote(true);
+}
+function askSug(q){
+ var seq=++sugSeq;
+ tfetch(API+"/api/delivery/suggest",{method:"POST",
+  headers:{"Content-Type":"application/json"},body:JSON.stringify({q:q})})
+ .then(function(r){return r.json()})
+ .then(function(j){
+  if(seq!==sugSeq)return;              /* a later keystroke already won */
+  if(document.activeElement!==$("addrIn"))return;
+  sugItems=(j&&j.suggestions)||[];sugIdx=-1;renderSug();
+ })
+ .catch(function(){if(seq===sugSeq)closeSug()});
+}
 function bindAddress(){
  var ai=$("addrIn");if(!ai)return;
  ai.addEventListener("input",function(){
   state.addr=ai.value.trim();state.addrErr="";
   try{localStorage.setItem("lx_addr",state.addr)}catch(e){}
-  clearTimeout(addrTimer);
-  /* wait for them to stop typing: every keystroke would be a geocode */
-  addrTimer=setTimeout(function(){requestQuote(true)},700);
+  clearTimeout(addrTimer);clearTimeout(sugTimer);
+  if(state.addr.length<3){closeSug();return}
+  /* suggestions come quickly, the quote waits for them to stop typing */
+  sugTimer=setTimeout(function(){askSug(state.addr)},220);
+  addrTimer=setTimeout(function(){requestQuote(true)},900);
  });
  ai.addEventListener("keydown",function(e){
-  if(e.key==="Enter"){e.preventDefault();ai.blur();clearTimeout(addrTimer);requestQuote(true)}
+  var open=sugItems.length&&!$("addrList").hidden;
+  if(e.key==="ArrowDown"&&open){e.preventDefault();sugIdx=(sugIdx+1)%sugItems.length;renderSug();return}
+  if(e.key==="ArrowUp"&&open){e.preventDefault();sugIdx=(sugIdx-1+sugItems.length)%sugItems.length;renderSug();return}
+  if(e.key==="Escape"&&open){e.preventDefault();closeSug();return}
+  if(e.key==="Enter"){
+   e.preventDefault();
+   if(open&&sugIdx>=0){chooseSug(sugIdx);return}
+   closeSug();ai.blur();clearTimeout(addrTimer);requestQuote(true);
+  }
  });
+ ai.addEventListener("blur",function(){setTimeout(closeSug,120)});
 }
 /* the server names exactly why it will not deliver; say it in their language */
 function deliveryProblem(j){
@@ -1387,7 +1477,12 @@ function renderCheckout(){
    w.appendChild(inp);
    var fe=el("small","ferr","");fe.id=f[0]+"err";w.appendChild(fe);
   });
-  if(k)w.appendChild(el("p","pickup-where",lbl(T.pickupAtLbl,k.name+" · "+k.addr)));
+  /* a delivery customer is not picking anything up — show where it goes */
+  if(state.quote&&state.quote.delivery){
+   w.appendChild(el("p","pickup-where",lbl(T.deliverTo+":",state.quote.delivery.address)));
+  } else if(k){
+   w.appendChild(el("p","pickup-where",lbl(T.pickupAtLbl,k.name+" · "+k.addr)));
+  }
   var re=el("p","reassure");re.appendChild(icon("lock",17));
   re.appendChild(el("span",null,T.payNote));w.appendChild(re);
   /* the primary action rides a sticky footer — never below the fold */
