@@ -420,11 +420,24 @@ function skeleton(){
  c.appendChild(el("div","skel",T.loading));
  for(var i=0;i<3;i++)c.appendChild(el("div","skrow"));
 }
+/* Translations and borrowed photos are worth a short wait and nothing more:
+   a fetch with no timeout that never settles would leave the customer looking
+   at an empty menu forever. Whatever lands later simply applies on the next
+   render. */
+function mapsReady(){
+ return new Promise(function(done){
+  var settled=false;
+  var finish=function(){if(!settled){settled=true;done()}};
+  setTimeout(finish,2500);
+  Promise.all([ensureDmap(),ensurePmap()]).then(finish,finish);
+ });
+}
 function loadMenu(){
  skeleton();
  var s=slug;
  fetch(API+"/api/menu/"+s).then(function(r){if(!r.ok)throw 0;return r.json()})
- .then(function(m){return Promise.all([ensureDmap(),ensurePmap()]).then(function(){return m})})
+ /* the maps only decorate — a stalled one must never hold the menu hostage */
+ .then(function(m){return mapsReady().then(function(){return m})})
  .then(function(m){if(slug!==s)return;menuData=m;renderMenu()})
  .catch(function(){
   if(slug!==s)return;

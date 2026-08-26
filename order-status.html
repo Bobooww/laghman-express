@@ -159,9 +159,13 @@ function payCartLines(){
 function clearCarts(){
  try{
   var s=localStorage.getItem("lx_pay_slug");
-  if(s){localStorage.removeItem("lx_cart_"+s);localStorage.removeItem("lx_pay_slug")}
-  else{for(var i=localStorage.length-1;i>=0;i--){var k=localStorage.key(i);
-   if(k&&k.indexOf("lx_cart_")===0)localStorage.removeItem(k)}}
+  /* Only the kitchen that was paid, and only while we still know which one.
+     Opening this page a second time finds the marker already gone — the cart
+     it belonged to was cleared on the first visit, and sweeping "all carts"
+     then would throw away an order being built at the other kitchen. */
+  if(!s)return;
+  localStorage.removeItem("lx_cart_"+s);
+  localStorage.removeItem("lx_pay_slug");
  }catch(e){}
 }
 function summaryHtml(lines){
