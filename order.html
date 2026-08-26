@@ -463,7 +463,7 @@ var STR={
   fName:"Enter your name",fPhone:"Enter your phone number",fEmail:"Enter a valid email",
   payNote:"Payment opens on Clover’s secure page — your card details never touch this site. You won’t be charged until you confirm there.",
   pickupAtLbl:"Pickup at",
-  notActive:"Online payment isn’t live yet at this kitchen. Call and we’ll take your order:",
+  notActive:"Online payment isn’t live yet at this kitchen. Call and we’ll take your order:",payFailed:"That payment didn’t go through. Please try again.",
   call:"Call",priceChanged:"The kitchen updated its menu — totals refreshed, please review.",
   netErr:"Connection hiccup. Try again.",
   add:"Add",mi:"mi",km:"km",choose:"Choose an option",required:"required",
@@ -485,7 +485,7 @@ var STR={
   fName:"Укажите имя",fPhone:"Укажите номер телефона",fEmail:"Укажите корректный email",
   payNote:"Оплата пройдёт на защищённой странице Clover — данные карты не попадают на этот сайт. Списание — только после вашего подтверждения на странице оплаты.",
   pickupAtLbl:"Самовывоз:",
-  notActive:"Онлайн-оплата на этой кухне ещё не включена. Позвоните — примем заказ:",
+  notActive:"Онлайн-оплата на этой кухне ещё не включена. Позвоните — примем заказ:",payFailed:"Платёж не прошёл. Попробуйте ещё раз.",
   call:"Позвонить",priceChanged:"Кухня обновила меню — суммы пересчитаны, проверьте заказ.",
   netErr:"Сбой связи. Попробуйте ещё раз.",
   add:"Добавить",mi:"мили",km:"км",choose:"Выберите вариант",required:"обязательно",
@@ -507,7 +507,7 @@ var STR={
   fName:"请填写姓名",fPhone:"请填写电话号码",fEmail:"请填写有效邮箱",
   payNote:"将在 Clover 安全页面完成支付——银行卡信息不会经过本网站。只有您在该页面确认后才会扣款。",
   pickupAtLbl:"自取门店：",
-  notActive:"该门店的在线支付尚未开通。请致电下单：",
+  notActive:"该门店的在线支付尚未开通。请致电下单：",payFailed:"支付未成功，请重试。",
   call:"拨打电话",priceChanged:"门店更新了菜单——金额已重新计算，请确认。",
   netErr:"网络不稳定，请重试。",
   add:"加入",mi:"英里",km:"公里",choose:"请选择",required:"必选",
@@ -547,8 +547,23 @@ function money(c){return "$"+(c/100).toFixed(2)}
 /* Clover serves each item's own menu photo from its CDN, keyed by item id.
    Sizes available: 750x563 and 1500x1125. Items without a photo 404 — the
    node removes itself, so new photos appear the moment the kitchen uploads one. */
-function photoUrl(id,big){return "https://cloverstatic.com/menu-assets/items/"+
- encodeURIComponent(id)+(big?"_1500x1125":"_750x563")+".jpeg"}
+/* Only part of each kitchen's menu was photographed, but the three kitchens
+   cook the same food — so a dish with no photo of its own borrows the one
+   taken at another kitchen. The map holds itemId -> donor itemId; Clover has
+   no API for uploading an image, and this needs none. */
+var PMAP=null,PMAP_P=null;
+function ensurePmap(){
+ if(PMAP)return PMAP_P||Promise.resolve();
+ if(!PMAP_P)PMAP_P=fetch("photo-map-a.json").then(function(r){return r.ok?r.json():null})
+  .then(function(j){PMAP=j||{p:{}}}).catch(function(){PMAP={p:{}}});
+ return PMAP_P;
+}
+ensurePmap();
+function photoUrl(id,big){
+ var src=(PMAP&&PMAP.p&&PMAP.p[id])||id;
+ return "https://cloverstatic.com/menu-assets/items/"+
+  encodeURIComponent(src)+(big?"_1500x1125":"_750x563")+".jpeg";
+}
 /* the engine's own lazy-loading proved unreliable here: the fetch can stay
    deferred forever while the clip-path reveal waits for it — empty tiles.
    So the fetches are scheduled by hand: an observer for the normal case and
@@ -842,7 +857,7 @@ function loadMenu(){
  menuSkeleton();$("chips").innerHTML="";
  var s=state.slug;
  tfetch(API+"/api/menu/"+s).then(function(r){if(!r.ok)throw 0;return r.json()})
- .then(function(m){return Promise.resolve(ensureDmap()).then(function(){return m})})
+ .then(function(m){return Promise.all([ensureDmap(),ensurePmap()]).then(function(){return m})})
  .then(function(m){
   if(state.slug!==s)return;
   state.menu=m;renderMenu();pruneCart();
@@ -1330,6 +1345,10 @@ function startHosted(){
    $("cartErr").textContent="";
    var nl=$("cartNotice");nl.textContent=T.priceChanged;nl.hidden=false;
    requestQuote(true);flashTotals();return}
+  if(res.j&&res.j.code==="CHECKOUT_SESSION_FAILED"){
+   /* that attempt is finished for good — a fresh key or the button just
+      re-lands on the same dead attempt */
+   state.idem=null;$("cartErr").textContent=T.payFailed;return}
   if(res.j&&res.j.code==="HOSTED_CHECKOUT_NOT_ACTIVE"){
    $("cartErr").textContent=T.notActive;
    state.cfg=null;ckMode=null;fetchCfg();return}
