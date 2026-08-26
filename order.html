@@ -1345,7 +1345,10 @@ function askSug(q){
  .then(function(r){return r.json()})
  .then(function(j){
   if(seq!==sugSeq)return;              /* a later keystroke already won */
-  if(document.activeElement!==$("addrIn"))return;
+  /* the field still has to hold what we asked about — focus is not a
+     reliable test on phones, but the text is */
+  var ai=$("addrIn");
+  if(!ai||ai.value.trim()!==q)return;
   sugItems=(j&&j.suggestions)||[];sugIdx=-1;renderSug();
  })
  .catch(function(){if(seq===sugSeq)closeSug()});
