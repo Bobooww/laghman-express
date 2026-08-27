@@ -845,7 +845,7 @@ function resetKitchenState(){
  lastQuote=null;
  state.menu=null;state.quote=null;state.idem=null;state.cfg=null;
  state.quoteBusy=false;state.quoteErr=false;state.quoteFails=0;
- ckMode=null;modCache={};lastTotal=null;
+ ckMode=null;modCache={};lastTotal=null;cfgFails=0;
  quoteSeq++;clearTimeout(quoteTimer);
  $("cartNotice").hidden=true;$("cartErr").textContent="";
 }
@@ -1319,6 +1319,10 @@ function deliveryOn(){return deliveryChosen()&&state.addr.length>7}
 function renderFulfil(){
  var wrap=$("fulfil"),segs=$("segs"),aw=$("addrWrap"),ai=$("addrIn"),note=$("addrNote");
  if(!wrap)return;
+ /* No kitchen chosen yet — this says nothing about how they want it. Forcing
+    pickup here threw away a delivery they had already picked, just because
+    they tapped a language button on the kitchen screen. */
+ if(!state.slug){wrap.hidden=true;return}
  /* the choice only exists where a driver does */
  if(!DELIVERS[state.slug]){wrap.hidden=true;state.mode="pickup";return}
  wrap.hidden=!state.cart.length;
@@ -1424,7 +1428,16 @@ function bindAddress(){
    state.quoteBusy=true;renderTotals();updateBar();
   }
   clearTimeout(addrTimer);clearTimeout(sugTimer);
-  if(state.addr.length<3){closeSug();return}
+  if(state.addr.length<3){
+   /* the spinner was set two lines up for a quote that will now never be
+      asked for, and nothing ever cleared it: erasing the address to retype it
+      left "checking today's prices" and a dead pay button, for good */
+   closeSug();
+   state.quote=null;lastQuote=null;state.idem=null;
+   state.quoteBusy=false;state.quoteErr=false;
+   state.deliveryBlocked=deliveryChosen()?T.addrNeeded:"";
+   ++quoteSeq;clearTimeout(quoteTimer);
+   renderFulfil();renderTotals();updateBar();return}
   /* suggestions come quickly, the quote waits for them to stop typing */
   sugTimer=setTimeout(function(){askSug(state.addr)},220);
   addrTimer=setTimeout(function(){requestQuote(true)},900);
@@ -1474,6 +1487,15 @@ function handleCartRefusal(j){
    $("cartErr").textContent="";
    renderCart();updateBar();requestQuote(true);return true;
   }
+ }
+ /* the $5,000 ceiling: a real answer with no itemId and no delivery reason,
+    which used to fall through to the generic retry UI and tell a catering
+    customer that the connection had hiccuped */
+ if(j.code==="CART_TOO_LARGE"){
+  state.quoteErr=false;state.quoteBusy=false;state.quote=null;state.idem=null;
+  state.deliveryBlocked="";
+  $("cartErr").textContent=T.cartTooBig;
+  renderTotals();updateBar();return true;
  }
  var dp=deliveryProblem(j);
  if(dp){
@@ -1540,11 +1562,15 @@ function fetchCfg(){
  var s=state.slug;if(!s)return;
  tfetch(API+"/api/checkout/config/"+s)
  .then(function(r){if(!r.ok)throw 0;return r.json()})
- .then(function(c){if(state.slug!==s)return;state.cfg=c;renderCheckout()})
+ .then(function(c){if(state.slug!==s)return;state.cfg=c;cfgFails=0;renderCheckout()})
  .catch(function(){if(state.slug!==s)return;
   cfgFails++;
-  if(cfgFails>=3){ckMode=null;renderCheckout();return}
-  setTimeout(function(){if(state.slug===s&&!state.cfg)fetchCfg()},4000)});
+  /* Three misses on a subway connection used to retire the payment form for
+     the rest of the visit — the kitchen was shown as call-only while it was
+     taking cards all along. Keep asking, just further apart. */
+  if(cfgFails===3){ckMode=null;renderCheckout()}
+  var wait=Math.min(60000,4000*cfgFails);
+  setTimeout(function(){if(state.slug===s&&!state.cfg)fetchCfg()},wait)});
 }
 function hostedActive(){return state.cfg&&state.cfg.paymentsEnabled&&state.cfg.checkoutMode==="hosted_checkout"}
 var ckMode=null,cfgFails=0; /* build the form once; rebuilding on every qty tap would wipe typed input */
@@ -1620,7 +1646,15 @@ function syncPayBtn(){
  if(pend){btn.disabled=false;btn.textContent=T.payCheck;return}
  /* The banner said the kitchen was shut and the button took the money anyway.
     Nobody is there to cook it, and the ticket prints into an empty room. */
- if(kitchenIsClosed()){btn.disabled=true;btn.textContent=T.payClosed;return}
+ if(kitchenIsClosed()){
+  var kc=kitchen();
+  btn.disabled=true;
+  btn.textContent=T.payClosed.replace("{t}",kc&&kc.oh?fmtTime(kc.oh.o):"");return}
+ /* "checking today's prices" while the real answer is "you are twelve dollars
+    short" or "that address is out of range" — the customer waits for a spinner
+    that has already finished */
+ if(state.deliveryBlocked&&!state.quoteBusy){
+  btn.disabled=true;btn.textContent=state.deliveryBlocked;return}
  if(state.quoteErr&&!state.quoteBusy){btn.disabled=true;btn.textContent=T.quoteFail;return}
  if(state.quoteBusy||!state.quote){btn.disabled=true;btn.textContent=T.quoteWait}
  else{btn.disabled=false;btn.textContent=T.payOnline+" · "+money(state.quote.totalCents)}

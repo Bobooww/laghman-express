@@ -155,8 +155,12 @@ function paidSubtitle(j){
  return T.paidSub;
 }
 function showPaid(j){
- var lines=payCartLines();
+ var lines=payCartLines()||keptReceipt();
  var sub=paidSubtitle(j);
+ /* Kept before the cart is emptied. The receipt was read out of the cart and
+    the cart was then deleted, so reloading at the counter — exactly when the
+    staff ask to see it — showed a paid order with nothing on it. */
+ keepReceipt(lines);
  clearCarts();clearPending();
  card.classList.remove("pop");
  set(OK+"<h1>"+esc(T.paid)+"</h1><p>"+esc(sub)+"</p>"
@@ -168,6 +172,22 @@ function waiting(){card.innerHTML='<div class="spin"></div><h1>'+esc(T.wait)+"</
 /* carts are cleared ONLY here, on confirmed payment — never before redirect.
    Scoped to the kitchen that was paid (lx_pay_slug); a cart being built at the
    OTHER kitchen must survive. Falls back to clearing all if the slug is gone. */
+/* One receipt at a time, tied to nothing but this page: it outlives the cart
+   so a reload still shows what was bought. */
+function keepReceipt(lines){
+ if(!lines||!lines.length)return;
+ try{localStorage.setItem("lx_receipt",JSON.stringify(
+  {t:Date.now(),lines:lines.slice(0,8)}))}catch(e){}
+}
+function keptReceipt(){
+ try{
+  var r=JSON.parse(localStorage.getItem("lx_receipt")||"null");
+  /* a day is longer than anyone stands at a counter, and short enough that a
+     later order never shows an older one */
+  if(!r||!r.lines||!r.t||Date.now()-r.t>86400000)return null;
+  return r.lines;
+ }catch(e){return null}
+}
 function payCartLines(){
  try{var s=localStorage.getItem("lx_pay_slug");if(!s)return null;
   var c=JSON.parse(localStorage.getItem("lx_cart_"+s)||"[]");
