@@ -90,19 +90,19 @@ var KITCHENS={
 var STR={
  en:{title:"Order status — Laghman Express",
   wait:"Confirming your payment…",waitSub:"This usually takes a few seconds.",
-  paid:"Order paid — thank you!",paidSub:"The kitchen is being notified. Pick it up at the counter — show this screen if asked.",
+  paid:"Order paid — thank you!",paidSub:"The kitchen is being notified. Pick it up at the counter — show this screen if asked.",paidDelivery:"The kitchen is being notified. A driver will bring it to",paidNotSent:"Your payment went through. The kitchen has not confirmed the ticket yet \u2014 call them with the reference below so nobody cooks it twice.",noSuchOrder:"We can\u2019t find an order on this link",noSuchOrderSub:"The app you opened it in may have cut the link short. If you were charged, don\u2019t pay again \u2014 call the kitchen and give your name; they will find it.",
   failed:"Payment didn't go through",failedSub:"Your card wasn't charged. You can try again or call the kitchen.",
   unknown:"We're double-checking your payment",unknownSub:"If you were charged, don't pay again — the kitchen will reconcile it. Keep this page open: we keep checking, and your reference is below.",
   noToken:"This link is missing its order reference.",back:"Back to menu",ref:"Reference",call:"Call"},
  ru:{title:"Статус заказа — Laghman Express",
   wait:"Подтверждаем оплату…",waitSub:"Обычно это занимает несколько секунд.",
-  paid:"Заказ оплачен — спасибо!",paidSub:"Кухня уже получила уведомление. Заберите заказ у стойки; покажите этот экран, если попросят.",
+  paid:"Заказ оплачен — спасибо!",paidSub:"Кухня уже получила уведомление. Заберите заказ у стойки; покажите этот экран, если попросят.",paidDelivery:"Кухня уже получила уведомление. Курьер привезёт заказ по адресу",paidNotSent:"Оплата прошла. Кухня пока не подтвердила приём заказа \u2014 позвоните и назовите номер ниже, чтобы его не приготовили дважды.",noSuchOrder:"По этой ссылке заказ не найден",noSuchOrderSub:"Ссылку мог обрезать мессенджер, из которого вы её открыли. Если деньги списались \u2014 не платите повторно: позвоните на кухню и назовите своё имя, заказ найдут.",
   failed:"Оплата не прошла",failedSub:"Деньги с карты не списаны. Попробуйте ещё раз или позвоните на кухню.",
   unknown:"Проверяем вашу оплату",unknownSub:"Если деньги списались — не платите повторно, кухня сверит платёж. Не закрывайте страницу: мы продолжаем проверять, номер заказа ниже.",
   noToken:"В ссылке нет номера заказа.",back:"К меню",ref:"Номер",call:"Позвонить"},
  zh:{title:"订单状态 — Laghman Express",
   wait:"正在确认支付…",waitSub:"通常只需几秒钟。",
-  paid:"支付成功——谢谢！",paidSub:"门店已收到通知。请到柜台取餐；如有需要请出示本页面。",
+  paid:"支付成功——谢谢！",paidSub:"门店已收到通知。请到柜台取餐；如有需要请出示本页面。",paidDelivery:"\u95e8\u5e97\u5df2\u6536\u5230\u901a\u77e5\u3002\u9a91\u624b\u5c06\u9001\u81f3",paidNotSent:"\u652f\u4ed8\u5df2\u5b8c\u6210\u3002\u95e8\u5e97\u5c1a\u672a\u786e\u8ba4\u63a5\u5355\u2014\u2014\u8bf7\u81f4\u7535\u5e76\u62a5\u4e0b\u65b9\u7f16\u53f7\uff0c\u4ee5\u514d\u91cd\u590d\u5236\u4f5c\u3002",noSuchOrder:"\u6b64\u94fe\u63a5\u672a\u627e\u5230\u8ba2\u5355",noSuchOrderSub:"\u94fe\u63a5\u53ef\u80fd\u88ab\u5e94\u7528\u622a\u65ad\u3002\u5982\u5df2\u6263\u6b3e\uff0c\u8bf7\u52ff\u91cd\u590d\u652f\u4ed8\u2014\u2014\u81f4\u7535\u95e8\u5e97\u5e76\u544a\u77e5\u59d3\u540d\uff0c\u4ed6\u4eec\u4f1a\u627e\u5230\u8ba2\u5355\u3002",
   failed:"支付未完成",failedSub:"没有产生扣款。您可以重试，或致电门店。",
   unknown:"正在核对您的支付",unknownSub:"如果已扣款，请勿重复支付——门店会核对账目。请保留本页面：我们会持续核对，订单编号见下方。",
   noToken:"链接中缺少订单编号。",back:"返回菜单",ref:"编号",call:"拨打电话"}
@@ -138,15 +138,32 @@ function show(mark,h,sub,withRef,withCall){
  +(withCall?callBtn():"")
  +'<br><a class="btn" href="order">'+esc(T.back)+"</a>"+(withRef?refLine():""));
 }
-function showPaid(){
+/* The payment is settled one way or the other, so the order page may offer to
+   take an order again. */
+function clearPending(){try{localStorage.removeItem("lx_pending_pay")}catch(e){}}
+/* What actually happens to this order now — a driver, or the counter — and
+   whether the kitchen has really been told. Saying "we've told the kitchen,
+   collect at the counter" to a delivery customer whose ticket never printed
+   was two wrong statements in one line. */
+function paidSubtitle(j){
+ var told=!j||!j.kitchenStatus||j.kitchenStatus==="sent_to_kitchen";
+ var mode="",addr="";
+ try{mode=localStorage.getItem("lx_pay_mode")||"";
+  addr=localStorage.getItem("lx_pay_addr")||""}catch(e){}
+ if(!told)return T.paidNotSent;
+ if(mode==="delivery")return T.paidDelivery+(addr?" "+addr:"");
+ return T.paidSub;
+}
+function showPaid(j){
  var lines=payCartLines();
- clearCarts();
+ var sub=paidSubtitle(j);
+ clearCarts();clearPending();
  card.classList.remove("pop");
- set(OK+"<h1>"+esc(T.paid)+"</h1><p>"+esc(T.paidSub)+"</p>"
+ set(OK+"<h1>"+esc(T.paid)+"</h1><p>"+esc(sub)+"</p>"
  +summaryHtml(lines)
  +'<a class="btn" href="order">'+esc(T.back)+"</a>"+refLine());
 }
-function showFailed(){show(FAIL,T.failed,T.failedSub,true,true)}
+function showFailed(){clearPending();show(FAIL,T.failed,T.failedSub,true,true)}
 function waiting(){card.innerHTML='<div class="spin"></div><h1>'+esc(T.wait)+"</h1><p>"+esc(T.waitSub)+"</p>"}
 /* carts are cleared ONLY here, on confirmed payment — never before redirect.
    Scoped to the kitchen that was paid (lx_pay_slug); a cart being built at the
@@ -166,6 +183,8 @@ function clearCarts(){
   if(!s)return;
   localStorage.removeItem("lx_cart_"+s);
   localStorage.removeItem("lx_pay_slug");
+  localStorage.removeItem("lx_pay_mode");
+  localStorage.removeItem("lx_pay_addr");
  }catch(e){}
 }
 function summaryHtml(lines){
@@ -182,7 +201,12 @@ function fetchStatus(){
  var ctl=("AbortController" in window)?new AbortController():null;
  var t=ctl?setTimeout(function(){ctl.abort()},10000):null;
  return fetch(API+"/api/order-status/"+encodeURIComponent(token),ctl?{signal:ctl.signal}:{})
-  .then(function(r){if(t)clearTimeout(t);return r.ok?r.json():null})
+  .then(function(r){if(t)clearTimeout(t);
+   /* A 404 is an answer, not silence: this token names no order and no amount
+      of waiting will change that. Folding it into "not confirmed yet" left
+      someone who had just paid watching a spinner for seven minutes. */
+   if(r.status===404)return {notFound:true};
+   return r.ok?r.json():null})
   .catch(function(){if(t)clearTimeout(t);return null});
 }
 var done=false;
@@ -190,7 +214,7 @@ function handle(j){
  if(done)return false;
  if(j&&j.reference)reference=j.reference;
  var s=j&&j.status;
- if(s==="succeeded"||s==="paid"){done=true;showPaid();return true}
+ if(s==="succeeded"||s==="paid"){done=true;showPaid(j);return true}
  if(s==="failed"){done=true;showFailed();return true}
  return false;
 }
@@ -204,7 +228,7 @@ else if(failedHint){
    if(done)return;
    if(j&&j.reference)reference=j.reference;
    var s=j&&j.status;
-   if(s==="succeeded"||s==="paid"){done=true;showPaid();return}
+   if(s==="succeeded"||s==="paid"){done=true;showPaid(j);return}
    if(reference)showFailed();
    if(++fhTries<4)setTimeout(fhCheck,fhTries*5000);
   });
@@ -217,12 +241,18 @@ else if(failedHint){
 else{
  waiting();
  var tries=0,FAST=70; /* ~7.5 min of dense polling, then a slow forever-poll */
- var slowShown=false;
+ var slowShown=false,missing=0;
  function poll(){
   if(done)return;
   tries++;
   fetchStatus().then(function(j){
    if(handle(j))return;
+   /* Two in a row rules out a stray edge answer. After that the link itself is
+      the problem, and saying so beats another seven minutes of spinner. */
+   if(j&&j.notFound){
+    if(++missing>=2){done=true;clearPending();
+     show(HELP,T.noSuchOrder,T.noSuchOrderSub,false,true);return}
+   } else if(j){missing=0}
    if(tries<FAST){setTimeout(poll,tries<10?3000:(tries<30?5000:8000))}
    else{
     if(!slowShown){slowShown=true;show(WAIT,T.unknown,T.unknownSub,true,true)}
