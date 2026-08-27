@@ -378,6 +378,7 @@ button.loc:active,a.loc:active{transform:scale(.99)}
   </div>
   <p class="mnote" data-i="liveNote"></p>
   <p class="notice" id="hoursNote" aria-live="polite" hidden></p>
+  <p class="notice" id="otherCart" aria-live="polite" hidden></p>
   <div class="chips" id="chips"></div>
   <div id="cats"></div>
 </section>
@@ -499,7 +500,7 @@ var STR={
   fName:"Enter your name",fPhone:"Enter your phone number",fEmail:"Enter a valid email",
   payNote:"Payment opens on Clover’s secure page — your card details never touch this site. You won’t be charged until you confirm there.",
   pickupAtLbl:"Pickup at",
-  notActive:"Online payment isn’t live yet at this kitchen. Call and we’ll take your order:",payFailed:"That payment didn’t go through. Please try again.",payCheck:"Check your payment",pickupTab:"Pickup",deliveryTab:"Delivery",addrPh:"Street address, Brooklyn, NY",addrHint:"We check the distance and route it to the nearest kitchen.",deliveryFee:"Delivery",freeDelivery:"Free",deliverTo:"Delivering to",milesAway:"mi away",noDeliveryHere:"This kitchen is pickup only.",minShort:"Add {x} more for delivery.",tooFar:"That address is outside the delivery range.",addrBad:"We couldn’t find that address. Check the street and ZIP.",addrSlow:"Address lookup is busy. Try again in a moment.",addrNeeded:"Enter the delivery address to see the total.",lineGone:"The kitchen just ran out of something — we removed it from your cart.",fixField:"Check this one.",cartTooBig:"This order is too large to pay for online. Please call the kitchen.",freeWithin:"Free within {m} mi",fromAmount:"from {x}",thenFee:"then {x} to {m} mi",
+  notActive:"Online payment isn’t live yet at this kitchen. Call and we’ll take your order:",payFailed:"That payment didn’t go through. Please try again.",payCheck:"Check your payment",payClosed:"Kitchen closed \u2014 opens at {t}",otherCart:"You have {n} dishes in a cart at {k} \u2014 open it",pickupTab:"Pickup",deliveryTab:"Delivery",addrPh:"Street address, Brooklyn, NY",addrHint:"We measure the distance from this kitchen.",deliveryFee:"Delivery",freeDelivery:"Free",deliverTo:"Delivering to",milesAway:"mi away",noDeliveryHere:"This kitchen is pickup only.",minShort:"Add {x} more for delivery.",tooFar:"That address is outside the delivery range.",addrBad:"We couldn’t find that address. Check the street and ZIP.",addrSlow:"Address lookup is busy. Try again in a moment.",addrNeeded:"Enter the delivery address to see the total.",lineGone:"The kitchen just ran out of something — we removed it from your cart.",fixField:"Check this one.",cartTooBig:"This order is too large to pay for online. Please call the kitchen.",freeWithin:"Free within {m} mi",fromAmount:"from {x}",thenFee:"then {x} to {m} mi",
   call:"Call",priceChanged:"The kitchen updated its menu — totals refreshed, please review.",
   netErr:"Connection hiccup. Try again.",
   add:"Add",mi:"mi",km:"km",choose:"Choose an option",required:"required",
@@ -521,7 +522,7 @@ var STR={
   fName:"Укажите имя",fPhone:"Укажите номер телефона",fEmail:"Укажите корректный email",
   payNote:"Оплата пройдёт на защищённой странице Clover — данные карты не попадают на этот сайт. Списание — только после вашего подтверждения на странице оплаты.",
   pickupAtLbl:"Самовывоз:",
-  notActive:"Онлайн-оплата на этой кухне ещё не включена. Позвоните — примем заказ:",payFailed:"Платёж не прошёл. Попробуйте ещё раз.",payCheck:"Проверить оплату",pickupTab:"Самовывоз",deliveryTab:"Доставка",addrPh:"Улица и дом, Бруклин, NY",addrHint:"Проверим расстояние и отправим на ближайшую кухню.",deliveryFee:"Доставка",freeDelivery:"Бесплатно",deliverTo:"Доставим по адресу",milesAway:"мили",noDeliveryHere:"Эта кухня работает только на самовывоз.",minShort:"Добавьте ещё на {x} — и доставим.",tooFar:"Этот адрес вне зоны доставки.",addrBad:"Не нашли такой адрес. Проверьте улицу и индекс.",addrSlow:"Поиск адреса занят. Попробуйте через секунду.",addrNeeded:"Введите адрес доставки — покажем итог.",lineGone:"На кухне закончилась позиция — мы убрали её из корзины.",fixField:"Проверьте это поле.",cartTooBig:"Такой заказ слишком большой для онлайн-оплаты. Позвоните на кухню.",freeWithin:"Бесплатно до {m} миль",fromAmount:"от {x}",thenFee:"далее {x} до {m} миль",
+  notActive:"Онлайн-оплата на этой кухне ещё не включена. Позвоните — примем заказ:",payFailed:"Платёж не прошёл. Попробуйте ещё раз.",payCheck:"Проверить оплату",payClosed:"Кухня закрыта \u2014 откроется в {t}",otherCart:"У вас {n} позиций в корзине на {k} \u2014 открыть",pickupTab:"Самовывоз",deliveryTab:"Доставка",addrPh:"Улица и дом, Бруклин, NY",addrHint:"Считаем расстояние от этой кухни.",deliveryFee:"Доставка",freeDelivery:"Бесплатно",deliverTo:"Доставим по адресу",milesAway:"мили",noDeliveryHere:"Эта кухня работает только на самовывоз.",minShort:"Добавьте ещё на {x} — и доставим.",tooFar:"Этот адрес вне зоны доставки.",addrBad:"Не нашли такой адрес. Проверьте улицу и индекс.",addrSlow:"Поиск адреса занят. Попробуйте через секунду.",addrNeeded:"Введите адрес доставки — покажем итог.",lineGone:"На кухне закончилась позиция — мы убрали её из корзины.",fixField:"Проверьте это поле.",cartTooBig:"Такой заказ слишком большой для онлайн-оплаты. Позвоните на кухню.",freeWithin:"Бесплатно до {m} миль",fromAmount:"от {x}",thenFee:"далее {x} до {m} миль",
   call:"Позвонить",priceChanged:"Кухня обновила меню — суммы пересчитаны, проверьте заказ.",
   netErr:"Сбой связи. Попробуйте ещё раз.",
   add:"Добавить",mi:"мили",km:"км",choose:"Выберите вариант",required:"обязательно",
@@ -543,7 +544,7 @@ var STR={
   fName:"请填写姓名",fPhone:"请填写电话号码",fEmail:"请填写有效邮箱",
   payNote:"将在 Clover 安全页面完成支付——银行卡信息不会经过本网站。只有您在该页面确认后才会扣款。",
   pickupAtLbl:"自取门店：",
-  notActive:"该门店的在线支付尚未开通。请致电下单：",payFailed:"支付未成功，请重试。",payCheck:"\u67e5\u770b\u652f\u4ed8\u72b6\u6001",pickupTab:"自取",deliveryTab:"外送",addrPh:"街道地址，布鲁克林 NY",addrHint:"我们会计算距离并派给最近的门店。",deliveryFee:"外送费",freeDelivery:"免费",deliverTo:"送至",milesAway:"英里",noDeliveryHere:"该门店仅支持自取。",minShort:"再加 {x} 即可外送。",tooFar:"该地址不在外送范围内。",addrBad:"找不到该地址，请检查街道和邮编。",addrSlow:"地址查询繁忙，请稍后再试。",addrNeeded:"请输入外送地址以查看总价。",lineGone:"厨房刚刚售罄一项，已从购物车中移除。",fixField:"请检查此项。",cartTooBig:"订单金额过大，无法在线支付，请致电门店。",freeWithin:"{m} 英里内免费",fromAmount:"满 {x} 起送",thenFee:"{m} 英里内加收 {x}",
+  notActive:"该门店的在线支付尚未开通。请致电下单：",payFailed:"支付未成功，请重试。",payCheck:"\u67e5\u770b\u652f\u4ed8\u72b6\u6001",payClosed:"\u95e8\u5e97\u5df2\u6253\u70ca \u2014 {t} \u5f00\u95e8",otherCart:"\u60a8\u5728 {k} \u8fd8\u6709 {n} \u4ef6\u5546\u54c1 \u2014 \u6253\u5f00",pickupTab:"自取",deliveryTab:"外送",addrPh:"街道地址，布鲁克林 NY",addrHint:"\u6211\u4eec\u4ece\u8be5\u95e8\u5e97\u8ba1\u7b97\u8ddd\u79bb\u3002",deliveryFee:"外送费",freeDelivery:"免费",deliverTo:"送至",milesAway:"英里",noDeliveryHere:"该门店仅支持自取。",minShort:"再加 {x} 即可外送。",tooFar:"该地址不在外送范围内。",addrBad:"找不到该地址，请检查街道和邮编。",addrSlow:"地址查询繁忙，请稍后再试。",addrNeeded:"请输入外送地址以查看总价。",lineGone:"厨房刚刚售罄一项，已从购物车中移除。",fixField:"请检查此项。",cartTooBig:"订单金额过大，无法在线支付，请致电门店。",freeWithin:"{m} 英里内免费",fromAmount:"满 {x} 起送",thenFee:"{m} 英里内加收 {x}",
   call:"拨打电话",priceChanged:"门店更新了菜单——金额已重新计算，请确认。",
   netErr:"网络不稳定，请重试。",
   add:"加入",mi:"英里",km:"公里",choose:"请选择",required:"必选",
@@ -861,7 +862,7 @@ function pickKitchen(slug){
  $("gate").style.display="none";
  var mn=$("menu");mn.style.display="block";
  mn.classList.remove("enter");void mn.offsetWidth;mn.classList.add("enter");
- renderMenuChrome();loadMenu();fetchCfg();updateBar();
+ renderMenuChrome();loadMenu();fetchCfg();updateBar();noticeOtherCart();
  window.scrollTo(0,0);
  var mt=$("mTitle");if(mt&&mt.focus)mt.focus({preventScroll:true});
  if(state.cart.length)requestQuote();
@@ -879,6 +880,14 @@ function fmtTime(min){
  var hh=Math.floor(min/60),mm=min%60,mmp=(mm<10?"0":"")+mm;
  if(lang==="en"){var ap=hh>=12?"pm":"am",h12=hh%12||12;return h12+":"+mmp+" "+ap}
  return hh+":"+mmp;
+}
+/** Closed by the kitchen's own clock — the only clock that decides whether
+    anybody is there to cook this. */
+function kitchenIsClosed(){
+ var k=kitchen();if(!k||!k.oh)return false;
+ var m=kitchenNowMin(k);
+ if(m==null)return false;
+ return !(m>=k.oh.o&&m<k.oh.c);
 }
 function updateHoursNote(){
  var k=kitchen(),note=$("hoursNote");
@@ -1609,9 +1618,24 @@ function syncPayBtn(){
     knows the answer instead. */
  var pend=pendingPayment();
  if(pend){btn.disabled=false;btn.textContent=T.payCheck;return}
+ /* The banner said the kitchen was shut and the button took the money anyway.
+    Nobody is there to cook it, and the ticket prints into an empty room. */
+ if(kitchenIsClosed()){btn.disabled=true;btn.textContent=T.payClosed;return}
  if(state.quoteErr&&!state.quoteBusy){btn.disabled=true;btn.textContent=T.quoteFail;return}
  if(state.quoteBusy||!state.quote){btn.disabled=true;btn.textContent=T.quoteWait}
  else{btn.disabled=false;btn.textContent=T.payOnline+" · "+money(state.quote.totalCents)}
+}
+/* iOS keeps the layout viewport still under the keyboard, so a sticky footer
+   sits behind it: the pay button and the line that explains the refusal are
+   both invisible exactly when they matter. Letting the field go closes the
+   keyboard and brings the answer back on screen. */
+function surfaceCheckoutError(){
+ try{
+  var a=document.activeElement;
+  if(a&&/^(cN|cP|cE|addrIn)$/.test(a.id||"")&&a.blur)a.blur();
+  var e=$("cartErr");
+  if(e&&e.scrollIntoView)setTimeout(function(){e.scrollIntoView({block:"center"})},60);
+ }catch(x){}
 }
 function validateField(id){
  var inp=$(id);if(!inp)return true;
@@ -1625,6 +1649,11 @@ function validateField(id){
  return ok;
 }
 function startHosted(){
+ /* the tab may have been open since before closing time */
+ if(kitchenIsClosed()){
+  var kc=kitchen();
+  $("cartErr").textContent=T.closedNow.replace("{t}",kc&&kc.oh?fmtTime(kc.oh.o):"");
+  syncPayBtn();return}
  var pb=$("payBtn");if(pb&&pb._busy)return; /* Enter-key path bypasses the disabled button */
  var okN=validateField("cN"),okP=validateField("cP"),okE=validateField("cE");
  if(!okN){$("cN").focus();return}
@@ -1704,19 +1733,20 @@ function startHosted(){
     var fe=$(fid+"err");if(fe)fe.textContent=T.fixField||T.netErr;
     var fi=$(fid);if(fi){fi._err=true;fi.focus()}
     $("cartErr").textContent="";
-   } else $("cartErr").textContent=T.netErr;
+   } else $("cartErr").textContent=T.netErr;surfaceCheckoutError();
    return}
   if(res.j&&res.j.code==="CART_TOO_LARGE"){
-   $("cartErr").textContent=T.cartTooBig;return}
+   $("cartErr").textContent=T.cartTooBig;surfaceCheckoutError();return}
   if(res.j&&res.j.code==="CHECKOUT_SESSION_FAILED"){
    /* that attempt is finished for good — a fresh key or the button just
       re-lands on the same dead attempt */
-   state.idem=null;$("cartErr").textContent=T.payFailed;return}
+   state.idem=null;$("cartErr").textContent=T.payFailed;surfaceCheckoutError();return}
   if(res.j&&res.j.code==="HOSTED_CHECKOUT_NOT_ACTIVE"){
-   $("cartErr").textContent=T.notActive;
+   $("cartErr").textContent=T.notActive;surfaceCheckoutError();
    state.cfg=null;ckMode=null;fetchCfg();return}
-  $("cartErr").textContent=(res.j&&res.j.code==="MENU_UNAVAILABLE")?T.menuFail:T.netErr;})
- .catch(function(){unbusy();$("cartErr").textContent=T.netErr});
+  $("cartErr").textContent=(res.j&&res.j.code==="MENU_UNAVAILABLE")?T.menuFail:T.netErr;
+  surfaceCheckoutError();})
+ .catch(function(){unbusy();$("cartErr").textContent=T.netErr});surfaceCheckoutError();
 }
 /* ---------- a payment already on its way ---------- */
 /* Written the moment the customer leaves for Clover and cleared by
@@ -1756,6 +1786,36 @@ window.addEventListener("pageshow",function(e){
  else{state.quote=null;lastTotal=null;
   if($("cartOv").classList.contains("open"))closeSheet("cartOv")}
 });
+
+/* A cart is stored per kitchen, and three other surfaces write lx_kitchen
+   without knowing that — the photo menu's tabs and the legacy /branch links.
+   Someone who built a cart on one kitchen and came back through one of those
+   found an empty cart and no hint that their order still existed. */
+function noticeOtherCart(){
+ var box=$("otherCart");if(!box)return;
+ box.hidden=true;box.innerHTML="";
+ if(state.cart.length)return;
+ var found=null;
+ try{
+  for(var i=0;i<localStorage.length;i++){
+   var key=localStorage.key(i);
+   if(!key||key.indexOf("lx_cart_")!==0)continue;
+   var slug=key.slice(8);if(slug===state.slug)continue;
+   var c=JSON.parse(localStorage.getItem(key)||"[]");
+   if(Array.isArray(c)&&c.length){
+    /* dishes, not rows — that is what a person counts */
+    var q=0;c.forEach(function(l){q+=(+l.quantity||1)});
+    found={slug:slug,n:q};break}
+  }
+ }catch(e){return}
+ if(!found)return;
+ var k=null;KITCHENS.forEach(function(x){if(x.slug===found.slug)k=x});
+ if(!k)return;
+ var b=el("button","btn-line",T.otherCart.replace("{n}",found.n).replace("{k}",k.name));
+ b.type="button";
+ b.onclick=function(){pickKitchen(found.slug)};
+ box.appendChild(b);box.hidden=false;
+}
 
 /* ---- boot ---- */
 function setHdrVar(){var hd=document.querySelector(".hdr");
