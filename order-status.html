@@ -249,8 +249,16 @@ else if(failedHint){
    if(j&&j.reference)reference=j.reference;
    var s=j&&j.status;
    if(s==="succeeded"||s==="paid"){done=true;showPaid(j);return}
-   if(reference)showFailed();
-   if(++fhTries<4)setTimeout(fhCheck,fhTries*5000);
+   /* Only the server saying so makes it a failure. The URL parameter is a hint
+      from a redirect that can race the webhook, and after thirty seconds this
+      used to settle on "your card was not charged" — the one sentence that
+      must never be wrong, because it invites a second payment. */
+   if(s==="failed"){done=true;showFailed();return}
+   if(++fhTries<4){setTimeout(fhCheck,fhTries*5000);return}
+   /* out of quick tries and still unresolved: say what is actually known and
+      keep checking in the background rather than asserting an outcome */
+   show(WAIT,T.unknown,T.unknownSub,true,true);
+   setTimeout(fhCheck,30000);
   });
  }
  fhCheck();

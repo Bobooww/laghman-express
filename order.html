@@ -170,7 +170,9 @@ button.loc:active,a.loc:active{transform:scale(.99)}
 .mhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:.6rem 1rem;margin-bottom:.4rem}
 .mhead h1{font-size:clamp(1.6rem,4.2vw,2.3rem)}
 .mhead .sw{font-size:.8rem;color:var(--cream60);cursor:pointer;text-decoration:underline;
-  text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:rgba(246,241,228,.4)}
+  text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:rgba(246,241,228,.4);
+  /* a bare line of text is a 20px target; a thumb needs more than that */
+  display:inline-block;padding:.55rem .2rem;min-height:44px;line-height:1.9}
 .mnote{color:var(--cream60);font-size:.85rem;margin:.2rem 0 1rem}
 .chips{position:sticky;top:var(--hdrh,52px);z-index:30;display:flex;gap:.5rem;overflow-x:auto;
   padding:.7rem 4px;margin-inline:-4px;scroll-padding-inline:4px;
@@ -494,7 +496,7 @@ var STR={
   loading:"Loading the menu…",menuFail:"The menu is taking a break.",retry:"Try again",orCall:"or call",
   cart:"Your order",yourOrder:"Your order",empty:"Nothing here yet.",browseMenu:"Browse the menu",subtotal:"Subtotal",tax:"Tax",total:"Total",
   item1:"item",itemN:"items",
-  pickupOnly:"Pickup order — grab it at the counter.",quoteWait:"Checking today’s prices…",
+  pickupOnly:"Pickup order — grab it at the counter.",quoteWait:"Checking today’s prices…",tooFast:"That was a lot of tries — give it a few seconds.",
   quoteFail:"Couldn’t check prices.",removedGone:"Some items are no longer on today’s menu — we removed them from your order.",
   payOnline:"Pay",name:"Name",phone:"Phone",email:"Email",
   fName:"Enter your name",fPhone:"Enter your phone number",fEmail:"Enter a valid email",
@@ -516,7 +518,7 @@ var STR={
   loading:"Загружаем меню…",menuFail:"Меню отдыхает.",retry:"Попробовать ещё раз",orCall:"или позвоните",
   cart:"Ваш заказ",yourOrder:"Ваш заказ",empty:"Пока пусто.",browseMenu:"Посмотреть меню",subtotal:"Сумма",tax:"Налог",total:"Итого",
   item1:"позиция",item2:"позиции",itemN:"позиций",
-  pickupOnly:"Самовывоз — заберёте у стойки.",quoteWait:"Проверяем сегодняшние цены…",
+  pickupOnly:"Самовывоз — заберёте у стойки.",quoteWait:"Проверяем сегодняшние цены…",tooFast:"Слишком много попыток подряд — подождите несколько секунд.",
   quoteFail:"Не удалось проверить цены.",removedGone:"Часть позиций сегодня недоступна — мы убрали их из заказа.",
   payOnline:"Оплатить",name:"Имя",phone:"Телефон",email:"Email",
   fName:"Укажите имя",fPhone:"Укажите номер телефона",fEmail:"Укажите корректный email",
@@ -538,7 +540,7 @@ var STR={
   loading:"菜单加载中…",menuFail:"菜单开小差了。",retry:"再试一次",orCall:"或致电",
   cart:"我的订单",yourOrder:"我的订单",empty:"还没有添加菜品。",browseMenu:"去看菜单",subtotal:"小计",tax:"税费",total:"合计",
   item1:"份",itemN:"份",
-  pickupOnly:"自取订单——请到柜台取餐。",quoteWait:"正在核对今日价格…",
+  pickupOnly:"自取订单——请到柜台取餐。",quoteWait:"正在核对今日价格…",tooFast:"\u5c1d\u8bd5\u6b21\u6570\u8fc7\u591a\u2014\u2014\u8bf7\u7a0d\u7b49\u51e0\u79d2\u3002",
   quoteFail:"暂时无法核对价格。",removedGone:"部分菜品今日已下架——已从订单中移除。",
   payOnline:"支付",name:"姓名",phone:"电话",email:"邮箱",
   fName:"请填写姓名",fPhone:"请填写电话号码",fEmail:"请填写有效邮箱",
@@ -1241,7 +1243,8 @@ function renderCart(){
    hideStaleNotice();saveCart();renderCart();updateBar();requestQuote()};
   q.appendChild(minus);q.appendChild(el("b",null,String(l.quantity)));q.appendChild(plus);
   d.appendChild(q);w.appendChild(d);});
- $("pickupOnly").hidden=!state.cart.length;
+ /* it says "grab it at the counter" — never while a delivery is being priced */
+ $("pickupOnly").hidden=!state.cart.length||deliveryChosen();
  renderTotals();renderCheckout();
 }
 function renderTotals(){
@@ -1491,6 +1494,19 @@ function handleCartRefusal(j){
  /* the $5,000 ceiling: a real answer with no itemId and no delivery reason,
     which used to fall through to the generic retry UI and tell a catering
     customer that the connection had hiccuped */
+ /* Asked too often — a retry button here just asks again and resets the clock */
+ if(j.code==="RATE_LIMITED"){
+  state.quoteErr=false;state.quoteBusy=false;state.quote=null;state.idem=null;
+  state.deliveryBlocked=T.tooFast;
+  renderFulfil();renderTotals();updateBar();return true;
+ }
+ /* the server refused the shape of the request; pressing again sends the same
+    shape, so the generic retry could only ever repeat it */
+ if(j.code==="VALIDATION"){
+  state.quoteErr=false;state.quoteBusy=false;state.quote=null;state.idem=null;
+  $("cartErr").textContent=T.netErr;
+  renderTotals();updateBar();return true;
+ }
  if(j.code==="CART_TOO_LARGE"){
   state.quoteErr=false;state.quoteBusy=false;state.quote=null;state.idem=null;
   state.deliveryBlocked="";
@@ -1771,6 +1787,10 @@ function startHosted(){
    return}
   if(res.j&&res.j.code==="CART_TOO_LARGE"){
    $("cartErr").textContent=T.cartTooBig;surfaceCheckoutError();return}
+  /* Asked too often. The retry controls made it worse by asking again at once;
+     saying so and waiting is the only thing that helps. */
+  if(res.s===429){
+   $("cartErr").textContent=T.tooFast;surfaceCheckoutError();return}
   if(res.j&&res.j.code==="CHECKOUT_SESSION_FAILED"){
    /* that attempt is finished for good — a fresh key or the button just
       re-lands on the same dead attempt */
