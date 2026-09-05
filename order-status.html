@@ -150,17 +150,24 @@ function paidSubtitle(j){
  var mode="",addr="";
  try{mode=localStorage.getItem("lx_pay_mode")||"";
   addr=localStorage.getItem("lx_pay_addr")||""}catch(e){}
+ /* Those two keys are deleted by this page's own clearCarts, so on a reload —
+    a discarded tab, a second look at the counter — they are gone and this line
+    used to fall back to "collect at the counter" for an order already on its
+    way to someone's home. The receipt outlives the cart; the server outlives
+    the device. */
+ if(!mode){var r=keptOrder();if(r){mode=r.mode||"";addr=addr||r.addr||""}}
+ if(!mode&&j&&j.fulfillment)mode=j.fulfillment;
  if(!told)return T.paidNotSent;
  if(mode==="delivery")return T.paidDelivery+(addr?" "+addr:"");
  return T.paidSub;
 }
 function showPaid(j){
  var lines=payCartLines()||keptReceipt();
+ keepReceipt(lines);
  var sub=paidSubtitle(j);
  /* Kept before the cart is emptied. The receipt was read out of the cart and
     the cart was then deleted, so reloading at the counter — exactly when the
     staff ask to see it — showed a paid order with nothing on it. */
- keepReceipt(lines);
  clearCarts();clearPending();
  card.classList.remove("pop");
  set(OK+"<h1>"+esc(T.paid)+"</h1><p>"+esc(sub)+"</p>"
@@ -175,18 +182,31 @@ function waiting(){card.innerHTML='<div class="spin"></div><h1>'+esc(T.wait)+"</
 /* One receipt at a time, tied to nothing but this page: it outlives the cart
    so a reload still shows what was bought. */
 function keepReceipt(lines){
- if(!lines||!lines.length)return;
+ var mode="",addr="";
+ try{mode=localStorage.getItem("lx_pay_mode")||"";
+  addr=localStorage.getItem("lx_pay_addr")||""}catch(e){}
+ /* Every render after the first runs with those keys already deleted, so an
+    unguarded write would overwrite the remembered destination with nothing —
+    which is the very thing this receipt exists to survive. Only ever add. */
+ var had=keptOrder();
+ if(!mode&&had){mode=had.mode||"";addr=addr||had.addr||""}
+ if(!lines&&!mode)return;
  try{localStorage.setItem("lx_receipt",JSON.stringify(
-  {t:Date.now(),lines:lines.slice(0,8)}))}catch(e){}
+  {t:(had&&had.t)||Date.now(),lines:(lines||[]).slice(0,8),mode:mode,addr:addr}))}catch(e){}
 }
-function keptReceipt(){
+/* The receipt as a whole — what was bought and where it is going. */
+function keptOrder(){
  try{
   var r=JSON.parse(localStorage.getItem("lx_receipt")||"null");
-  /* a day is longer than anyone stands at a counter, and short enough that a
-     later order never shows an older one */
-  if(!r||!r.lines||!r.t||Date.now()-r.t>86400000)return null;
-  return r.lines;
+  if(!r||!r.t||Date.now()-r.t>86400000)return null;
+  return r;
  }catch(e){return null}
+}
+function keptReceipt(){
+ /* a day is longer than anyone stands at a counter, and short enough that a
+    later order never shows an older one */
+ var r=keptOrder();
+ return r&&r.lines&&r.lines.length?r.lines:null;
 }
 function payCartLines(){
  try{var s=localStorage.getItem("lx_pay_slug");if(!s)return null;
@@ -240,8 +260,12 @@ function handle(j){
 }
 if(!token){show(HELP,T.noToken,"",false,false)}
 else if(failedHint){
- /* the URL param is a hint, not truth — a raced webhook may have succeeded */
- showFailed();
+ /* The URL param is a hint, not truth — a raced webhook may have succeeded.
+    Rendering the failure first said "your card wasn't charged", the one
+    sentence that must never be wrong, and clearPending() inside it threw away
+    the guard that stops the intact cart being paid for twice. Say what is
+    actually known — that we are checking — and let the server decide. */
+ waiting();
  var fhTries=0;
  function fhCheck(){
   fetchStatus().then(function(j){

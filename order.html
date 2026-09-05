@@ -939,17 +939,36 @@ function mapsReady(){
 function loadMenu(){
  menuSkeleton();$("chips").innerHTML="";
  var s=state.slug;
- tfetch(API+"/api/menu/"+s).then(function(r){if(!r.ok)throw 0;return r.json()})
+ tfetch(API+"/api/menu/"+s).then(function(r){
+   /* 404 is an answer, not a hiccup: this kitchen is not served online right
+      now — a token pulled for rotation, or one the service never had. A retry
+      button here can never succeed, so say what is true and offer the phone,
+      exactly as the page already does for a phone-only kitchen. */
+   if(r.status===404){var e=new Error("no such kitchen");e.offline=true;throw e}
+   if(!r.ok)throw 0;return r.json()})
  /* the maps only decorate — a stalled one must never hold the menu hostage */
  .then(function(m){return mapsReady().then(function(){return m})})
  .then(function(m){
   if(state.slug!==s)return;
   state.menu=m;renderMenu();pruneCart();
  })
- .catch(function(){
+ .catch(function(err){
   if(state.slug!==s)return;
   var c=$("cats");c.innerHTML="";
   var box=el("div","skel");
+  /* Not a hiccup: this kitchen is not being served online. Turn it into the
+     phone-only kitchen the page already knows how to present — one message,
+     the number, and no checkout — instead of a Try again that can never
+     work. */
+  if(err&&err.offline){
+   for(var ki=0;ki<KITCHENS.length;ki++)if(KITCHENS[ki].slug===s)KITCHENS[ki].api=false;
+   box.appendChild(document.createTextNode(T.notActive+" "));
+   var ok=kitchen();
+   if(ok&&ok.tel){var oa=el("a",null,ok.phone);oa.href="tel:"+ok.tel;oa.style.color="var(--golds)";box.appendChild(oa)}
+   c.appendChild(box);
+   state.cart=[];state.quote=null;updateBar();renderCart();renderCheckout();
+   return;
+  }
   box.appendChild(document.createTextNode(T.menuFail+" "));
   var rb=el("button","btn btn-ghost",T.retry);rb.type="button";rb.style.margin="0 .5rem";rb.onclick=loadMenu;
   box.appendChild(rb);
@@ -1149,6 +1168,23 @@ function loadCart(){
 function saveCart(){try{localStorage.setItem(cartKey(),JSON.stringify(state.cart))}catch(e){}}
 /* a cart edit invalidates both the stale notice and the bar's remembered total */
 function hideStaleNotice(){$("cartNotice").hidden=true;lastTotal=null}
+/* Copy the server's per-unit prices onto the cart lines it just priced. The
+   server walks the cart in order and returns one line per cart line, so the
+   positions correspond — but the id is checked anyway, and a cart that does
+   not line up is left exactly as it was rather than half-updated. Returns
+   true when something actually moved. */
+function adoptQuotePrices(q){
+ var its=q&&q.items;
+ if(!its||its.length!==state.cart.length)return false;
+ for(var i=0;i<its.length;i++)if(its[i].itemId!==state.cart[i].itemId)return false;
+ var moved=false;
+ for(var j=0;j<its.length;j++){
+  var u=its[j].unitPriceCents;
+  if(typeof u!=="number")continue;
+  if(state.cart[j].unitCents!==u){state.cart[j].unitCents=u;moved=true}
+ }
+ return moved;
+}
 function addLine(it,modIds,modNames,unitCents){
  var key=it.id+"|"+modIds.slice().sort().join(",");
  var ln=null;for(var i=0;i<state.cart.length;i++)if(state.cart[i].key===key)ln=state.cart[i];
@@ -1562,7 +1598,14 @@ function requestQuote(now){
    if(seq!==quoteSeq)return;
    state.quoteBusy=false;
    if(res.ok){state.quote=res.j;lastTotal=res.j.totalCents;lastQuote=res.j;state.quoteFails=0;
-    state.addrErr="";state.deliveryBlocked="";$("cartErr").textContent="";renderFulfil()}
+    state.addrErr="";state.deliveryBlocked="";$("cartErr").textContent="";renderFulfil();
+    /* The line prices were captured when the dish went into the cart and were
+       never refreshed, so a cart left overnight showed yesterday's prices
+       beside today's total — the listed lines did not add up to the amount on
+       the pay button, with nothing saying why. The server just priced this
+       exact cart; take its numbers. */
+    if(adoptQuotePrices(res.j)){saveCart();renderCart();
+     var pn=$("cartNotice");pn.textContent=T.priceChanged;pn.hidden=false}}
    else{
     /* the kitchen pulled a dish or one of its options: the cart can never be
        quoted again, and it is saved — without dropping that line the customer
@@ -1649,13 +1692,9 @@ function renderCheckout(){
   /* the primary action rides a sticky footer — never below the fold */
   var foot=el("div","ckfoot");
   var btn=el("button","btn btn-gold");btn.id="payBtn";btn.type="button";
-  btn.onclick=function(){
-   /* while a payment is unresolved this button means "show me what happened",
-      never "charge me again" */
-   var p=pendingPayment();
-   if(p){if(p.statusUrl)location.href=p.statusUrl;else clearPaymentPending(),syncPayBtn();return}
-   startHosted();
-  };
+  /* while a payment is unresolved this means "show me what happened", never
+     "charge me again" — startHosted holds that rule for every entry point */
+  btn.onclick=function(){startHosted()};
   foot.appendChild(btn);foot.appendChild($("cartErr"));w.appendChild(foot);
   syncPayBtn();
  }else{
@@ -1714,6 +1753,12 @@ function validateField(id){
  return ok;
 }
 function startHosted(){
+ /* Money is already on its way for this cart. Every road into this function
+    has to refuse — the pay button asks first, but Enter in the email field
+    arrives here directly, and typing in that field has just cleared the
+    idempotency key that would have made a second attempt harmless. */
+ var pend=pendingPayment();
+ if(pend){if(pend.statusUrl)location.href=pend.statusUrl;else clearPaymentPending(),syncPayBtn();return}
  if(orderingPaused()){$("cartErr").textContent=T.pausedNote;syncPayBtn();return}
  /* the tab may have been open since before closing time */
  if(kitchenIsClosed()){
