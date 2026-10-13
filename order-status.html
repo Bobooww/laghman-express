@@ -115,6 +115,8 @@ document.title=T.title;
 var kitchen=null;try{kitchen=KITCHENS[localStorage.getItem("lx_kitchen")]||null}catch(e){}
 var q=new URLSearchParams(location.search);
 var token=q.get("token"),failedHint=q.get("result")==="failed";
+var pending=paymentPendingForStatus();
+if(pending&&KITCHENS[pending.payment.slug])kitchen=KITCHENS[pending.payment.slug];
 var card=document.getElementById("card");
 var reference=null;
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML.replace(/"/g,"&quot;")}
@@ -138,9 +140,47 @@ function show(mark,h,sub,withRef,withCall){
  +(withCall?callBtn():"")
  +'<br><a class="btn" href="order">'+esc(T.back)+"</a>"+(withRef?refLine():""));
 }
-/* The payment is settled one way or the other, so the order page may offer to
-   take an order again. */
-function clearPending(){try{localStorage.removeItem("lx_pending_pay")}catch(e){}}
+function pendingRecords(){
+ var records=[];
+ try{for(var i=0;i<localStorage.length;i++){
+  var key=localStorage.key(i);
+  if(!key||(key!=="lx_pending_pay"&&key.indexOf("lx_pending_pay_")!==0))continue;
+  try{var p=JSON.parse(localStorage.getItem(key)||"null");
+   if(p)records.push({storageKey:key,payment:p})}catch(e){}
+ }}catch(e){}
+ return records;
+}
+function pendingToken(p){
+ try{return new URL(p.statusUrl).searchParams.get("token")}catch(e){return null}
+}
+function paymentPendingForStatus(){
+ var records=pendingRecords();
+ for(var i=0;i<records.length;i++)if(token&&pendingToken(records[i].payment)===token)return records[i];
+ return null;
+}
+function payContextMatches(){
+ try{var t=localStorage.getItem("lx_pay_token");
+  if(t)return t===token;
+  var p=paymentPendingForStatus();
+  return !!p&&localStorage.getItem("lx_pay_slug")===p.payment.slug;
+ }catch(e){return false}
+}
+/* A confirmed old link must never unlock a different kitchen or a newer
+   checkout in another tab. Missing/unknown links do not settle any payment. */
+function clearPending(){
+ pendingRecords().forEach(function(r){
+  if(!token||pendingToken(r.payment)!==token)return;
+  try{localStorage.removeItem(r.storageKey);
+   var key="lx_pending_pay_"+r.payment.slug;
+   var request=JSON.parse(sessionStorage.getItem(key)||"null");
+   if(request&&request.key===r.payment.key)sessionStorage.removeItem(key);
+  }catch(e){}
+ });
+}
+function paymentCartSignature(lines){
+ return JSON.stringify((lines||[]).map(function(l){return [l.itemId,l.quantity,
+  (l.modifierIds||[]).slice().sort()]}));
+}
 /* What actually happens to this order now — a driver, or the counter — and
    whether the kitchen has really been told. Saying "we've told the kitchen,
    collect at the counter" to a delivery customer whose ticket never printed
@@ -148,8 +188,10 @@ function clearPending(){try{localStorage.removeItem("lx_pending_pay")}catch(e){}
 function paidSubtitle(j){
  var told=!j||!j.kitchenStatus||j.kitchenStatus==="sent_to_kitchen";
  var mode="",addr="";
- try{mode=localStorage.getItem("lx_pay_mode")||"";
-  addr=localStorage.getItem("lx_pay_addr")||""}catch(e){}
+ var p=paymentPendingForStatus();if(p)mode=p.payment.mode||"";
+ try{if(payContextMatches()){
+  mode=mode||localStorage.getItem("lx_pay_mode")||"";
+  addr=localStorage.getItem("lx_pay_addr")||""}}catch(e){}
  /* Those two keys are deleted by this page's own clearCarts, so on a reload —
     a discarded tab, a second look at the counter — they are gone and this line
     used to fall back to "collect at the counter" for an order already on its
@@ -168,7 +210,7 @@ function showPaid(j){
  /* Kept before the cart is emptied. The receipt was read out of the cart and
     the cart was then deleted, so reloading at the counter — exactly when the
     staff ask to see it — showed a paid order with nothing on it. */
- clearCarts();clearPending();
+ clearCarts(j);clearPending();
  card.classList.remove("pop");
  set(OK+"<h1>"+esc(T.paid)+"</h1><p>"+esc(sub)+"</p>"
  +summaryHtml(lines)
@@ -183,8 +225,10 @@ function waiting(){card.innerHTML='<div class="spin"></div><h1>'+esc(T.wait)+"</
    so a reload still shows what was bought. */
 function keepReceipt(lines){
  var mode="",addr="";
- try{mode=localStorage.getItem("lx_pay_mode")||"";
-  addr=localStorage.getItem("lx_pay_addr")||""}catch(e){}
+ var p=paymentPendingForStatus();if(p)mode=p.payment.mode||"";
+ try{if(payContextMatches()){
+  mode=mode||localStorage.getItem("lx_pay_mode")||"";
+  addr=localStorage.getItem("lx_pay_addr")||""}}catch(e){}
  /* Every render after the first runs with those keys already deleted, so an
     unguarded write would overwrite the remembered destination with nothing —
     which is the very thing this receipt exists to survive. Only ever add. */
@@ -192,13 +236,13 @@ function keepReceipt(lines){
  if(!mode&&had){mode=had.mode||"";addr=addr||had.addr||""}
  if(!lines&&!mode)return;
  try{localStorage.setItem("lx_receipt",JSON.stringify(
-  {t:(had&&had.t)||Date.now(),lines:(lines||[]).slice(0,8),mode:mode,addr:addr}))}catch(e){}
+  {token:token,t:(had&&had.t)||Date.now(),lines:(lines||[]).slice(0,8),mode:mode,addr:addr}))}catch(e){}
 }
 /* The receipt as a whole — what was bought and where it is going. */
 function keptOrder(){
  try{
   var r=JSON.parse(localStorage.getItem("lx_receipt")||"null");
-  if(!r||!r.t||Date.now()-r.t>86400000)return null;
+  if(!r||r.token!==token||!r.t||Date.now()-r.t>86400000)return null;
   return r;
  }catch(e){return null}
 }
@@ -209,22 +253,34 @@ function keptReceipt(){
  return r&&r.lines&&r.lines.length?r.lines:null;
 }
 function payCartLines(){
- try{var s=localStorage.getItem("lx_pay_slug");if(!s)return null;
+ var p=paymentPendingForStatus();
+ if(p&&Array.isArray(p.payment.lines))return p.payment.lines;
+ try{if(!p||!payContextMatches())return null;
+  var s=p.payment.slug;if(!s)return null;
   var c=JSON.parse(localStorage.getItem("lx_cart_"+s)||"[]");
   return Array.isArray(c)&&c.length?c:null}catch(e){return null}
 }
-function clearCarts(){
+function clearCarts(j){
  try{
-  var s=localStorage.getItem("lx_pay_slug");
+  var p=paymentPendingForStatus();if(!p)return;
+  var s=p.payment.slug;
   /* Only the kitchen that was paid, and only while we still know which one.
      Opening this page a second time finds the marker already gone — the cart
      it belonged to was cleared on the first visit, and sweeping "all carts"
      then would throw away an order being built at the other kitchen. */
-  if(!s)return;
-  localStorage.removeItem("lx_cart_"+s);
-  localStorage.removeItem("lx_pay_slug");
-  localStorage.removeItem("lx_pay_mode");
-  localStorage.removeItem("lx_pay_addr");
+  if(!s||(j&&j.locationSlug&&j.locationSlug!==s))return;
+  var cart=JSON.parse(localStorage.getItem("lx_cart_"+s)||"[]");
+  /* The receipt belongs to the submitted snapshot. Dishes added afterward
+     belong to the current cart and must survive an old payment's callback. */
+  /* Older saved checkouts have no snapshot. Retain their original paid-cart
+     behavior only when the matching checkout still owns the pay marker. */
+  var legacyPaidCart=!p.payment.cartSignature&&payContextMatches();
+  if(legacyPaidCart||(p.payment.cartSignature&&paymentCartSignature(cart)===p.payment.cartSignature))
+   localStorage.removeItem("lx_cart_"+s);
+  if(payContextMatches()){
+   localStorage.removeItem("lx_pay_slug");localStorage.removeItem("lx_pay_token");
+   localStorage.removeItem("lx_pay_mode");localStorage.removeItem("lx_pay_addr");
+  }
  }catch(e){}
 }
 function summaryHtml(lines){
@@ -253,6 +309,7 @@ var done=false;
 function handle(j){
  if(done)return false;
  if(j&&j.reference)reference=j.reference;
+ if(j&&KITCHENS[j.locationSlug])kitchen=KITCHENS[j.locationSlug];
  var s=j&&j.status;
  if(s==="succeeded"||s==="paid"){done=true;showPaid(j);return true}
  if(s==="failed"){done=true;showFailed();return true}
@@ -271,6 +328,7 @@ else if(failedHint){
   fetchStatus().then(function(j){
    if(done)return;
    if(j&&j.reference)reference=j.reference;
+   if(j&&KITCHENS[j.locationSlug])kitchen=KITCHENS[j.locationSlug];
    var s=j&&j.status;
    if(s==="succeeded"||s==="paid"){done=true;showPaid(j);return}
    /* Only the server saying so makes it a failure. The URL parameter is a hint
@@ -302,7 +360,7 @@ else{
    /* Two in a row rules out a stray edge answer. After that the link itself is
       the problem, and saying so beats another seven minutes of spinner. */
    if(j&&j.notFound){
-    if(++missing>=2){done=true;clearPending();
+    if(++missing>=2){done=true;
      show(HELP,T.noSuchOrder,T.noSuchOrderSub,false,true);return}
    } else if(j){missing=0}
    if(tries<FAST){setTimeout(poll,tries<10?3000:(tries<30?5000:8000))}
