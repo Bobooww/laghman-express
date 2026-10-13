@@ -1466,11 +1466,11 @@ function bindAddress(){
  ai.addEventListener("input",function(){
   state.addr=ai.value.trim();state.addrErr="";
   try{localStorage.setItem("lx_addr",state.addr)}catch(e){}
-  /* the quote in hand was priced for the address that was there a moment ago;
-     the moment they change it, it must stop being payable — the debounce
-     below would otherwise leave a second where Pay charges the old address */
-  if(state.quote&&state.quote.delivery){
-   state.quote=null;state.idem=null;++quoteSeq;
+  /* An earlier address quote may still be in flight. Invalidate its response
+     immediately, even with no stored quote, so it cannot become payable while
+     the debounce waits to price the newly typed address. */
+  if(deliveryChosen()){
+   state.quote=null;state.idem=null;++quoteSeq;clearTimeout(quoteTimer);
    state.quoteBusy=true;renderTotals();updateBar();
   }
   clearTimeout(addrTimer);clearTimeout(sugTimer);
@@ -1785,6 +1785,17 @@ function startHostedLocked(onlyExisting){
  /* A browser without the shared lock can check an existing attempt, but
     cannot safely create a new one while another tab might do the same. */
  if(onlyExisting){showCheckoutCallMessage(T.payBrowser);return}
+ /* Another tab may have paid or edited this kitchen's stored cart. Its
+    settled guard is gone, but this tab's old quote must not start a new
+    checkout for stale dishes. Existing recovery above keeps its own payload. */
+ var savedCart=loadCart();
+ if(paymentCartSignature(savedCart)!==paymentCartSignature(state.cart)){
+  state.cart=savedCart;state.quote=null;lastQuote=null;lastTotal=null;state.idem=null;
+  state.quoteBusy=false;state.quoteErr=false;++quoteSeq;clearTimeout(quoteTimer);
+  renderCart();updateBar();
+  if(state.cart.length)requestQuote(true);
+  return;
+ }
  if(orderingPaused()){$("cartErr").textContent=T.pausedNote;syncPayBtn();return}
  /* the tab may have been open since before closing time */
  if(kitchenIsClosed()){

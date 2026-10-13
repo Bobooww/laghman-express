@@ -11,6 +11,12 @@ Release checks:
 - Keep an unresolved payment guarded after timeout, reload, browser Back, or a missing status link.
 - Resume only the original active checkout; terminal or expired attempts use the status page.
 - Confirm one kitchen or an older status link cannot clear another pending attempt.
+- Edit a delivery address while its quote is in flight: the old response must stay
+  unpayable, the new address must receive a fresh quote, and an existing checkout
+  must retain its original recovery key and payload.
+- Confirm payment in one tab, then submit the old cart in a second tab: it must
+  reload the shared cart without another checkout. Shared edits require repricing;
+  intentionally saved new carts and existing checkout recovery must still work.
 
 New submissions use Web Locks to serialize tabs. Browsers without that capability
 can recover an existing attempt and receive browser or kitchen help for a new one.
