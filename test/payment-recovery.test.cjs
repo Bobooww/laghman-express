@@ -45,12 +45,13 @@ function webLocks() {
 }
 function element(id = '') {
   let text = '', html = '';
-  return {id, value: '', hidden: false, children: [], _busy: false,
+  return {id, value: '', hidden: false, children: [], _busy: false, listeners: {},
     get textContent() {return text;}, set textContent(v) {text = v; html = String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); this.children = [];},
     get innerHTML() {return html;}, set innerHTML(v) {html = v;},
     disabled: false, appendChild(n) {this.children.push(n); return n;},
     classList: {toggle() {}, add() {}, remove() {}, contains() {return false;}},
-    focus() {}, blur() {}, scrollIntoView() {},
+    focus() {}, blur() {}, scrollIntoView() {}, setAttribute() {},
+    addEventListener(name, fn) {this.listeners[name] = fn;},
   };
 }
 function baseRuntime(options = {}) {
@@ -83,6 +84,7 @@ function orderRuntime(options = {}) {
       quote: {quoteId: 'offline-quote', menuVersion: 'offline-menu', totalCents: 2068, expiresAt: new Date(Date.now() + 600000).toISOString()}},
     $: runtime.get, money: cents => '$' + (cents / 100).toFixed(2),
     uuid4: () => c.crypto.randomUUID(), API: 'https://offline-api.invalid',
+    quoteSeq: 0, quoteTimer: null, lastQuote: null, lastTotal: null,
     el: (_tag, _class, text) => {const e = element(); e.textContent = text; return e;},
     orderingPaused: () => false, kitchenIsClosed: () => false,
     kitchen: () => ({tel: '+10000000000', phone: '(000) 000-0000'}),
@@ -92,6 +94,8 @@ function orderRuntime(options = {}) {
   });
   vm.runInContext(orderHtml.slice(orderHtml.indexOf('var STR={'), orderHtml.indexOf('var lang=')), c);
   c.T = c.STR.en;
+  vm.runInContext(orderHtml.slice(orderHtml.indexOf('function cartKey(){'),
+    orderHtml.indexOf('function saveCart(){')), c);
   const fetchStart = orderHtml.indexOf('function tfetch(');
   vm.runInContext(orderHtml.slice(fetchStart, orderHtml.indexOf('function el(', fetchStart)), c);
   vm.runInContext(orderHtml.slice(orderHtml.indexOf('function syncPayBtn('), orderHtml.indexOf('/* A cart is stored per kitchen')), c);
@@ -102,6 +106,29 @@ function orderRuntime(options = {}) {
 function pending(slug = 'coney-island', url = statusUrl) {
   return {slug, key: '11111111-1111-4111-8111-111111111111', statusUrl: url,
     ts: Date.now(), cartSignature: signature(lines), lines: copy(lines), mode: 'pickup'};
+}
+function addressRuntime(options = {}) {
+  const runtime = orderRuntime(options), c = runtime.context;
+  Object.assign(c, {
+    quoteSeq: 0, quoteTimer: null, lastQuote: null, lastTotal: null,
+    addrTimer: null, sugTimer: null, sugSeq: 0, sugItems: [], sugIdx: -1,
+    deliveryChosen: () => c.state.mode === 'delivery',
+    deliveryOn: () => c.state.mode === 'delivery' && c.state.addr.length > 7,
+    renderTotals: () => c.syncPayBtn(), renderFulfil() {}, closeSug() {}, askSug() {},
+    adoptQuotePrices: () => false,
+  });
+  c.state.mode = 'delivery'; c.state.addr = 'Address A, Brooklyn, NY'; c.state.quote = null;
+  vm.runInContext(orderHtml.slice(orderHtml.indexOf('function bindAddress(){'),
+    orderHtml.indexOf('/* the server names exactly why')), c);
+  vm.runInContext(orderHtml.slice(orderHtml.indexOf('function requestQuote(now){'),
+    orderHtml.indexOf('/* ---- checkout ---- */')), c);
+  c.bindAddress();
+  return runtime;
+}
+function runScheduled(runtime, delay) {
+  const scheduled = [...runtime.timers].find(([, timer]) => timer.delay === delay);
+  assert.ok(scheduled, `scheduled timer ${delay}ms exists`);
+  runtime.timers.delete(scheduled[0]); scheduled[1].fn();
 }
 function statusRuntime(options = {}) {
   const runtime = baseRuntime({href: statusUrl, search: `?token=${token}`, ...options});
@@ -121,6 +148,124 @@ test('new checkout persists its guard before POST, stores recovery URL, and keep
   assert.ok(r.context.localStorage.getItem('lx_cart_coney-island'));
   assert.equal(p.customer, undefined);
   assert.equal(p.body, undefined);
+});
+
+test('editing a delivery address rejects its in-flight old quote before the new quote becomes payable', async () => {
+  const quotes = [];
+  const r = addressRuntime({fetch: (url, opts) => url.endsWith('/api/quotes')
+    ? new Promise(resolve => quotes.push({resolve, body: JSON.parse(opts.body)}))
+    : reply(201, {href: cloverHref, statusUrl})});
+  r.context.requestQuote(true); runScheduled(r, 0);
+  assert.equal(quotes[0].body.deliveryAddress, 'Address A, Brooklyn, NY');
+  r.get('addrIn').value = 'Address B, Brooklyn, NY'; r.get('addrIn').listeners.input();
+  quotes[0].resolve(await reply(200, {quoteId: 'quote-A', menuVersion: 'offline-menu', totalCents: 4200,
+    expiresAt: new Date(Date.now() + 600000).toISOString(), delivery: {address: 'Address A, Brooklyn, NY'}}));
+  await settle();
+  assert.equal(r.context.state.quote, null);
+  assert.equal(r.context.state.quoteBusy, true);
+  assert.equal(r.get('payBtn').disabled, true);
+  assert.equal(r.calls.filter(call => call.url.endsWith('/api/hosted-checkout/sessions')).length, 0);
+  runScheduled(r, 900); runScheduled(r, 0);
+  assert.equal(quotes[1].body.deliveryAddress, 'Address B, Brooklyn, NY');
+  quotes[1].resolve(await reply(200, {quoteId: 'quote-B', menuVersion: 'offline-menu', totalCents: 4700,
+    expiresAt: new Date(Date.now() + 600000).toISOString(), delivery: {address: 'Address B, Brooklyn, NY'}}));
+  await settle();
+  assert.equal(r.context.state.quote.quoteId, 'quote-B');
+  assert.equal(r.get('payBtn').disabled, false);
+  r.context.startHosted(); await settle();
+  const checkout = r.calls.find(call => call.url.endsWith('/api/hosted-checkout/sessions'));
+  assert.equal(JSON.parse(checkout.opts.body).quoteId, 'quote-B');
+  assert.equal(JSON.parse(checkout.opts.body).expectedTotalCents, 4700);
+});
+
+test('editing an address while a quote is in flight preserves the original pending checkout replay', async () => {
+  const p = pending('coney-island', ''); p.mode = 'delivery';
+  const original = {key: p.key, ts: Date.now(), addr: 'Address A, Brooklyn, NY', body: JSON.stringify({
+    quoteId: 'original-quote', menuVersion: 'offline-menu', expectedTotalCents: 4200,
+    customer: {name: 'Offline Test', phone: '0000000000', email: 'offline@example.invalid'},
+  })};
+  const local = storage({[localKey]: JSON.stringify(p)}), session = storage({[localKey]: JSON.stringify(original)});
+  let answerQuote;
+  const r = addressRuntime({local, session, fetch: url => url.endsWith('/api/quotes')
+    ? new Promise(resolve => {answerQuote = resolve;})
+    : reply(200, {href: cloverHref, statusUrl, checkoutSessionId: 'original-session',
+      expiresAt: new Date(Date.now() + 600000).toISOString()})});
+  r.context.requestQuote(true); runScheduled(r, 0);
+  r.get('addrIn').value = 'Address B, Brooklyn, NY'; r.get('addrIn').listeners.input();
+  answerQuote(await reply(200, {quoteId: 'stale-A', totalCents: 4200, delivery: {address: 'Address A, Brooklyn, NY'}}));
+  await settle();
+  assert.equal(r.context.state.quote, null);
+  assert.equal(JSON.parse(local.getItem(localKey)).key, p.key);
+  assert.equal(JSON.parse(session.getItem(localKey)).body, original.body);
+  r.context.startHosted(); await settle();
+  const checkout = r.calls.find(call => call.url.endsWith('/api/hosted-checkout/sessions'));
+  assert.equal(checkout.opts.headers['Idempotency-Key'], original.key);
+  assert.equal(checkout.opts.body, original.body);
+  assert.equal(JSON.parse(local.getItem(localKey)).checkoutSessionId, 'original-session');
+  assert.equal(r.context.location.href, cloverHref);
+});
+
+test('a second checkout tab cannot submit its stale cart after another tab confirms payment', async () => {
+  const local = storage(), locks = webLocks();
+  const otherCart = JSON.stringify([{...lines[0], quantity: 3}]);
+  const first = orderRuntime({local, locks, uuid: '11111111-1111-4111-8111-111111111111'});
+  const second = orderRuntime({local, locks, uuid: '22222222-2222-4222-8222-222222222222'});
+  local.setItem('lx_cart_emmons-ave', otherCart);
+  first.context.startHosted(); await settle();
+  statusRuntime({local, fetch: () => reply(200, {
+    status: 'succeeded', locationSlug: 'coney-island', kitchenStatus: 'sent_to_kitchen',
+  })});
+  await settle();
+  assert.equal(local.getItem(localKey), null);
+  assert.equal(local.getItem('lx_cart_coney-island'), null);
+  assert.equal(second.context.state.cart.length, 1);
+  second.context.startHosted(); await settle();
+  assert.equal(second.calls.length, 0);
+  assert.equal(second.context.state.cart.length, 0);
+  assert.equal(second.context.state.quote, null);
+  assert.equal(local.getItem('lx_cart_emmons-ave'), otherCart);
+});
+
+test('a changed shared cart is adopted and repriced before any new checkout', async () => {
+  const r = orderRuntime(), changed = [{...lines[0], quantity: 2}];
+  let repriced = 0;
+  r.context.requestQuote = now => {assert.equal(now, true); repriced++;};
+  r.context.localStorage.setItem('lx_cart_coney-island', JSON.stringify(changed));
+  r.context.startHosted(); await settle();
+  assert.equal(r.calls.length, 0);
+  assert.equal(r.context.state.cart[0].quantity, 2);
+  assert.equal(r.context.state.quote, null);
+  assert.equal(repriced, 1);
+  assert.equal(r.context.localStorage.getItem(localKey), null);
+});
+
+test('a deliberately edited and saved new cart can create its own checkout', async () => {
+  const r = orderRuntime();
+  r.context.state.cart[0].quantity = 2;
+  r.context.localStorage.setItem('lx_cart_coney-island', JSON.stringify(r.context.state.cart));
+  r.context.state.quote.quoteId = 'new-cart-quote'; r.context.state.quote.totalCents = 4136;
+  r.context.startHosted(); await settle();
+  assert.equal(r.calls.length, 1);
+  assert.equal(JSON.parse(r.calls[0].opts.body).quoteId, 'new-cart-quote');
+  assert.equal(JSON.parse(r.calls[0].opts.body).expectedTotalCents, 4136);
+});
+
+test('an existing pending checkout replays its original payload even after its shared cart was cleared', async () => {
+  const local = storage(), session = storage();
+  const first = orderRuntime({local, session, fetch: () => Promise.reject(new Error('offline response lost'))});
+  first.context.startHosted(); await settle();
+  const original = first.calls[0].opts;
+  const second = orderRuntime({local, session, fetch: () => reply(200, {statusUrl,
+    checkoutSessionId: 'original-session', expiresAt: new Date(Date.now() + 600000).toISOString()})});
+  second.context.state.cart[0].quantity = 2;
+  local.removeItem('lx_cart_coney-island');
+  second.context.startHosted(); await settle();
+  assert.equal(second.calls.length, 1);
+  assert.equal(second.calls[0].opts.headers['Idempotency-Key'], original.headers['Idempotency-Key']);
+  assert.equal(second.calls[0].opts.body, original.body);
+  assert.equal(second.context.state.cart[0].quantity, 2);
+  assert.ok(local.getItem(localKey));
+  assert.equal(JSON.parse(local.getItem(localKey)).statusUrl, statusUrl);
 });
 
 test('browser Back and repeated Enter check the same payment without another POST', async () => {
